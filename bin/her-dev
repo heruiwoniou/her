@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+
+process.env.DEBUG = process.env.DEBUG || 'her:*'
+
+const Her = require('../')
+const chokidar = require('chokidar')
+const parseArgs = require('minimist')
+const debug = require('debug')('her:config')
+const chalk = require('chalk')
+const fs = require('fs')
+const path = require('path')
+debug.color = 2
+const { resolve } = require('path')
+const argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    c: 'config-file'
+  },
+  string: ['c'],
+  default: {
+    c: 'her.config.js'
+  }
+})
+
+const rootDir = resolve(argv._[0] || '.')
+const nuxtConfigFile = resolve(argv['config-file']);
+
+let getConifg = function () {
+  let options
+  if (fs.existsSync(nuxtConfigFile)) {
+    delete require.cache[nuxtConfigFile]
+    options = require(nuxtConfigFile)
+  } else if (argv['config-file'] !== 'nuxt.config.js') {
+    console.error(`> Could not load config file ${argv['config-file']}`)
+    process.exit(1)
+  }
+  if (typeof options.rootDir !== 'tring') {
+    options.rootDir = rootDir
+  }
+
+  if (typeof options.srcDir !== 'string') {
+    options.srcDir = path.join(rootDir, 'src')
+  }
+
+  // Force development mode for add hot reloading and watching changes
+  options.dev = true
+
+  return options;
+}
+
+let herInstance;
+
+chokidar
+  .watch(nuxtConfigFile)
+  .on('all', function () {
+    try {
+      let config = getConifg()
+      if (herInstance) {
+        debug('[her.config.js] changed')
+        herInstance.serverStop().then(function () {
+          herInstance.setConfig(config)
+          herInstance.serverStart()
+        })
+      }
+      else {
+        herInstance = new Her(config);
+        herInstance.serverStart()
+      }
+    } catch (e) {
+      console.log('\n' + chalk.bgRed.white(' ERROR ') + '\n')
+      console.error(e)
+      console.log('\n')
+    }
+  })
