@@ -24,7 +24,6 @@ export function r() {
 }
 
 export function createRoutes(files, srcDir) {
-  debugger
   let routes = []
   files.forEach((file) => {
     let keys = file.replace(/^pages/, '').replace(/\.vue$/, '').replace(/\/{2,}/g, '/').split('/').slice(1)

@@ -6,6 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import connectHistoryApiFallback from 'connect-history-api-fallback'
 import configFactory from './../config'
+import { writeFile } from 'fs-extra'
 
 import path from 'path'
 
@@ -23,18 +24,19 @@ export default class Server {
   }
 
   setupMiddlewares() {
-    let config = configFactory(this.her.defaultOptions)
+    let config = configFactory(this.her.defaultOptions, this.her.builder)
     const compiler = webpack(config);
     this.her.defaultOptions.server.middlewares.forEach(middleware => this.app.use(middleware))
+    let devMiddleware = webpackDevMiddleware(compiler, {
+      publicPath: config.output.publicPath,
+      quiet: true
+    })
     this.app.use(webpackHotMiddleware(compiler, {
       log: false,
       heartbeat: 2000
     }))
     this.app.use(connectHistoryApiFallback())
-    this.app.use(webpackDevMiddleware(compiler, {
-      publicPath: config.output.publicPath,
-      quiet: true
-    }))
+    this.app.use(devMiddleware)
     this.app.use('/static', express.static(path.join(this.her.defaultOptions.rootDir, './static')))
   }
 
@@ -74,6 +76,5 @@ export default class Server {
         resolve()
       }
     })
-
   }
 }

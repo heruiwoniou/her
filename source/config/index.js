@@ -1,20 +1,52 @@
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-export default function (option) {
+import { resolve, join } from 'path'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import fromPairs from 'lodash/fromPairs'
+import vueLoader from './loader'
+import babel from './babel'
+import styleLoader from './style'
+
+export default function (baseOption, builderOption) {
   return {
-    entry: {
-      app: path.resolve(option.rootDir, 'index.js'),
-    },
+    entry: fromPairs(
+      builderOption.entries.map(
+        ({ entryName }) => ([entryName, resolve(builderOption.generateAppRoot, 'entries', entryName, 'index.js')]))
+    ),
     output: {
       filename: '[name].[hash].js',
-      path: path.resolve(option.rootDir, 'dist'),
+      path: resolve(baseOption.rootDir, 'dist'),
       publicPath: '/'
     },
     resolve: {
-      extensions: ['.js', '.json', '.vue', '.ts']
+      extensions: ['.js', '.json', '.vue', '.ts'],
+      alias: {
+        '@': join(baseOption.srcDir),
+        '@@': join(baseOption.rootDir),
+        '@@@': join(baseOption.rootDir, '.her')
+      }
     },
     module: {
+      noParse: /es6-promise\.js$/,
       rules: [
+        // {
+        //   test: /\.vue$/,
+        //   loader: 'vue-loader'
+        // },
+        {
+          test: /\.vue$/,
+          loader: 'vue-loader',
+          options: vueLoader(baseOption)
+        },
+        {
+          test: /\.js$/,
+          loader: 'babel-loader',
+          exclude: /node_modules/,
+          options: babel(baseOption)
+        },
+        { test: /\.css$/, use: styleLoader(baseOption, 'css') },
+        { test: /\.less$/, use: styleLoader(baseOption, 'less', 'less-loader') },
+        { test: /\.sass$/, use: styleLoader(baseOption, 'sass', { loader: 'sass-loader', options: { indentedSyntax: true } }) },
+        { test: /\.scss$/, use: styleLoader(baseOption, 'scss', 'sass-loader') },
+        { test: /\.styl(us)?$/, use: styleLoader(baseOption, 'stylus', 'stylus-loader') },
         {
           test: /\.(png|jpe?g|gif|svg)$/,
           loader: 'url-loader',
@@ -41,10 +73,12 @@ export default function (option) {
       ]
     },
     plugins: [
-      new HtmlWebpackPlugin({
-        title: option.title || 'Output Management',
-        template: path.resolve(option.rootDir, '.her/views/app.html')
-      })
+      ...builderOption.entries.map(
+        ({ entryName }, i) => new HtmlWebpackPlugin({
+          filename: i == 0 ? 'index.html' : `${entryName}.html`,
+          template: resolve(baseOption.srcDir, 'entries', entryName, 'index.html'),
+          chunks: [entryName]
+        }))
     ]
   }
 }
