@@ -7,6 +7,7 @@ import styleLoader from './style'
 
 export default function (baseOption, builderOption) {
   return {
+    devtool: baseOption.dev ? 'cheap-module-eval-source-map' : false,
     entry: fromPairs(
       builderOption.entries.map(
         ({ entryName }) => ([entryName, resolve(builderOption.generateAppRoot, 'entries', entryName, 'index.js')]))

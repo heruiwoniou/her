@@ -4,9 +4,10 @@ export default function babelOption(baseOption) {
     cacheDirectory: baseOption.dev,
     presets: [
       [
-        require('babel-preset-vue-app'),
+        'vue-app',
         {
-          targets: { ie: 9, uglify: true }
+          targets: { ie: 9, uglify: true },
+          useBuiltIns: true
         }
       ]
     ]

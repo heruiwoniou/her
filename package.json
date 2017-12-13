@@ -7,6 +7,7 @@
     "her": "./bin/her"
   },
   "dependencies": {
+    "autoprefixer": "^7.2.2",
     "babel-loader": "^7.1.2",
     "babel-preset-vue-app": "^2.0.0",
     "chalk": "^2.3.0",
@@ -15,6 +16,7 @@
     "connect": "^3.6.5",
     "connect-history-api-fallback": "^1.5.0",
     "cross-env": "^5.1.1",
+    "css-loader": "^0.28.7",
     "debug": "^3.1.0",
     "es6-promise": "^4.1.1",
     "events": "^1.1.1",
@@ -25,10 +27,14 @@
     "html-webpack-plugin": "^2.30.1",
     "lodash": "^4.17.4",
     "minimist": "^1.2.0",
+    "opn": "^5.1.0",
     "pify": "^3.0.0",
+    "postcss-loader": "^2.0.9",
     "rimraf": "^2.6.2",
+    "style-loader": "^0.19.0",
     "vue": "^2.5.10",
     "vue-loader": "^13.5.0",
+    "vue-style-loader": "^3.0.3",
     "vue-template-compiler": "^2.5.10",
     "webpack": "^3.10.0",
     "webpack-dev-middleware": "^1.12.2",
@@ -53,5 +59,10 @@
     "play": "node ./bin/her"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "browserslist": [
+    "> 1%",
+    "last 10 versions",
+    "not ie <= 8"
+  ]
 }

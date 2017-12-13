@@ -63,7 +63,7 @@ chokidar
       }
       else {
         herInstance = new Her(config);
-        herInstance.serverStart()
+        herInstance.serverStart(true)
       }
     } catch (e) {
       console.log('\n' + chalk.bgRed.white(' ERROR ') + '\n')

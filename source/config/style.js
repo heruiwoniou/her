@@ -16,7 +16,10 @@ export default function styleLoader(baseOption, ext, loaders = [], isVueLoader =
 
   // https://github.com/postcss/postcss-loader
   let postcssLoader = {
-    loader: 'postcss-loader'
+    loader: 'postcss-loader',
+    options: {
+      sourceMap: baseOption.dev
+    }
   }
 
   // https://github.com/webpack-contrib/css-loader

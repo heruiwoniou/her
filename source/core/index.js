@@ -48,9 +48,9 @@ export default class Her {
    * 
    * @memberof Her
    */
-  async serverStart() {
+  async serverStart(isFirst) {
       await this.builder.build()
-      await this.server.listen()
+      await this.server.listen(isFirst)
   }
 
   /**

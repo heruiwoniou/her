@@ -13,6 +13,7 @@ var _ = _interopDefault(require('lodash'));
 var express = _interopDefault(require('express'));
 var chalk = _interopDefault(require('chalk'));
 var webpack = _interopDefault(require('webpack'));
+var opn = _interopDefault(require('opn'));
 var webpackDevMiddleware = _interopDefault(require('webpack-dev-middleware'));
 var webpackHotMiddleware = _interopDefault(require('webpack-hot-middleware'));
 var connectHistoryApiFallback = _interopDefault(require('connect-history-api-fallback'));
@@ -5084,8 +5085,9 @@ function babelOption(baseOption) {
   return {
     babelrc: false,
     cacheDirectory: baseOption.dev,
-    presets: [[require('babel-preset-vue-app'), {
-      targets: { ie: 9, uglify: true }
+    presets: [['vue-app', {
+      targets: { ie: 9, uglify: true },
+      useBuiltIns: true
     }]]
   };
 }
@@ -5155,7 +5157,10 @@ function styleLoader(baseOption, ext) {
 
   // https://github.com/postcss/postcss-loader
   var postcssLoader = {
-    loader: 'postcss-loader'
+    loader: 'postcss-loader',
+    options: {
+      sourceMap: baseOption.dev
+    }
 
     // https://github.com/webpack-contrib/css-loader
   };var cssLoader = {
@@ -5235,6 +5240,7 @@ function vueLoader(baseOption, builderOption) {
 
 var configFactory = function (baseOption, builderOption) {
   return {
+    devtool: baseOption.dev ? 'cheap-module-eval-source-map' : false,
     entry: fromPairs_1(builderOption.entries.map(function (_ref) {
       var entryName = _ref.entryName;
       return [entryName, path.resolve(builderOption.generateAppRoot, 'entries', entryName, 'index.js')];
@@ -5320,22 +5326,28 @@ var Server = function () {
     value: function setupMiddlewares() {
       var _this = this;
 
-      var config = configFactory(this.her.defaultOptions, this.her.builder);
-      var compiler = webpack(config);
-      this.her.defaultOptions.server.middlewares.forEach(function (middleware) {
-        return _this.app.use(middleware);
+      return new _Promise(function (resolve$$1, reject) {
+        var config = configFactory(_this.her.defaultOptions, _this.her.builder);
+        var compiler = webpack(config);
+        _this.her.defaultOptions.server.middlewares.forEach(function (middleware) {
+          return _this.app.use(middleware);
+        });
+        var devMiddleware = webpackDevMiddleware(compiler, {
+          publicPath: config.output.publicPath,
+          noInfo: true
+        });
+        _this.app.use(webpackHotMiddleware(compiler, {
+          log: false,
+          heartbeat: 2000
+        }));
+        _this.app.use(connectHistoryApiFallback());
+        _this.app.use(devMiddleware);
+        _this.app.use('/static', express.static(path__default.join(_this.her.defaultOptions.rootDir, './static')));
+
+        devMiddleware.waitUntilValid(function () {
+          return resolve$$1();
+        });
       });
-      var devMiddleware = webpackDevMiddleware(compiler, {
-        publicPath: config.output.publicPath,
-        quiet: true
-      });
-      this.app.use(webpackHotMiddleware(compiler, {
-        log: false,
-        heartbeat: 2000
-      }));
-      this.app.use(connectHistoryApiFallback());
-      this.app.use(devMiddleware);
-      this.app.use('/static', express.static(path__default.join(this.her.defaultOptions.rootDir, './static')));
     }
 
     /**
@@ -5346,7 +5358,7 @@ var Server = function () {
 
   }, {
     key: 'listen',
-    value: function listen() {
+    value: function listen(isFirst) {
       var _this2 = this;
 
       return new _Promise(function (resolve$$1, reject) {
@@ -5355,15 +5367,19 @@ var Server = function () {
             port = _her$defaultOptions$s.port;
 
         _this2.app = express();
-        _this2.setupMiddlewares();
-        _this2.server = _this2.app.listen({ host: host, port: port, exclusive: false }, function (err) {
-          if (err) {
-            reject(err);
-          }
-          debug$1('server start');
-          var _host = host === '0.0.0.0' ? 'localhost' : host;
-          console.log('\n' + chalk.bgGreen.black(' OPEN ') + chalk.green(' http://' + _host + ':' + port + '\n'));
-          resolve$$1();
+        _this2.setupMiddlewares().then(function () {
+          _this2.server = _this2.app.listen({ host: host, port: port, exclusive: false }, function (err) {
+            if (err) {
+              reject(err);
+            }
+            debug$1('server start');
+            var _host = host === '0.0.0.0' ? 'localhost' : host;
+            console.log('\n' + chalk.bgGreen.black(' OPEN ') + chalk.green(' http://' + _host + ':' + port + '\n'));
+            if (isFirst) {
+              opn('http://' + _host + ':' + port);
+            }
+            resolve$$1();
+          });
         });
       });
     }
@@ -5444,7 +5460,7 @@ var Her$1 = function () {
   }, {
     key: 'serverStart',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(isFirst) {
         return regenerator.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -5454,7 +5470,7 @@ var Her$1 = function () {
 
               case 2:
                 _context.next = 4;
-                return this.server.listen();
+                return this.server.listen(isFirst);
 
               case 4:
               case 'end':
@@ -5464,7 +5480,7 @@ var Her$1 = function () {
         }, _callee, this);
       }));
 
-      function serverStart() {
+      function serverStart(_x) {
         return _ref.apply(this, arguments);
       }
 
