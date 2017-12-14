@@ -11,7 +11,7 @@ const dependencies = Object.keys(packageJson.dependencies)
 const version = packageJson.version
 
 export default {
-  input: resolve('source/index.js'),
+  input: resolve('lib/index.js'),
   output: {
     file: resolve('release/index.js'),
     format: 'cjs',

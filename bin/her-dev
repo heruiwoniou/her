@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin / env node
 
 process.env.DEBUG = process.env.DEBUG || 'her:*'
 
@@ -29,7 +29,7 @@ let getConifg = function () {
   if (fs.existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
     options = require(nuxtConfigFile)
-  } else if (argv['config-file'] !== 'nuxt.config.js') {
+  } else if (argv['config-file'] !== 'her.config.js') {
     console.error(`> Could not load config file ${argv['config-file']}`)
     process.exit(1)
   }
@@ -48,9 +48,9 @@ let getConifg = function () {
 }
 
 let herInstance;
-
+let timer;
 chokidar
-  .watch(nuxtConfigFile)
+  .watch([nuxtConfigFile])
   .on('all', function () {
     try {
       let config = getConifg()
@@ -58,7 +58,7 @@ chokidar
         debug('[her.config.js] changed')
         herInstance.serverStop().then(function () {
           herInstance.setConfig(config)
-          herInstance.serverStart()
+          setTimeout(() => herInstance.serverStart(), 5000)
         })
       }
       else {

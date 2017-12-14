@@ -24,6 +24,7 @@
     "extract-text-webpack-plugin": "^3.0.2",
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
+    "hash-sum": "^1.0.2",
     "html-webpack-plugin": "^2.30.1",
     "lodash": "^4.17.4",
     "minimist": "^1.2.0",
@@ -31,11 +32,14 @@
     "pify": "^3.0.0",
     "postcss-loader": "^2.0.9",
     "rimraf": "^2.6.2",
+    "serialize-javascript": "^1.4.0",
     "style-loader": "^0.19.0",
     "vue": "^2.5.10",
     "vue-loader": "^13.5.0",
+    "vue-router": "^3.0.1",
     "vue-style-loader": "^3.0.3",
     "vue-template-compiler": "^2.5.10",
+    "vuex": "^3.0.1",
     "webpack": "^3.10.0",
     "webpack-dev-middleware": "^1.12.2",
     "webpack-hot-middleware": "^2.21.0"
@@ -58,6 +62,12 @@
     "dev": "rollup --config ./build/rollup.config.js -w",
     "play": "node ./bin/her"
   },
+  "files": [
+    "bin",
+    "release",
+    "source",
+    "index.js"
+  ],
   "author": "",
   "license": "ISC",
   "browserslist": [
