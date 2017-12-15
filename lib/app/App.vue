@@ -1,5 +1,5 @@
 <template>
-  <div id="her" c='1'>
+  <div id="__her__">
     <component v-if="layout" :is="layout"></component>
   </div>
 </template>

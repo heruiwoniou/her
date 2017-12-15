@@ -4,3 +4,4 @@ node_modules/
 her.config.js
 npm-debug.log.*
 src/
+dist/

@@ -16,11 +16,12 @@ var express = _interopDefault(require('express'));
 var chalk = _interopDefault(require('chalk'));
 var webpack = _interopDefault(require('webpack'));
 var opn = _interopDefault(require('opn'));
+var MFS = _interopDefault(require('memory-fs'));
 var webpackDevMiddleware = _interopDefault(require('webpack-dev-middleware'));
 var webpackHotMiddleware = _interopDefault(require('webpack-hot-middleware'));
 var connectHistoryApiFallback = _interopDefault(require('connect-history-api-fallback'));
 var HtmlWebpackPlugin = _interopDefault(require('html-webpack-plugin'));
-var ExtractTextPlugin = _interopDefault(require('extract-text-webpack-plugin'));
+var chokidar = _interopDefault(require('chokidar'));
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -6086,47 +6087,52 @@ var Builder = function () {
   _createClass(Builder, [{
     key: 'build',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(isRoot) {
         return regenerator.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _context.next = 2;
+                if (!isRoot) {
+                  _context.next = 7;
+                  break;
+                }
+
+                _context.next = 3;
                 return fs.remove(this.generateAppRoot);
 
-              case 2:
-                _context.next = 4;
+              case 3:
+                _context.next = 5;
                 return fs.mkdirp(this.generateAppRoot);
 
-              case 4:
-                _context.next = 6;
+              case 5:
+                _context.next = 7;
                 return this.buildBaseFiles();
 
-              case 6:
-                _context.next = 8;
+              case 7:
+                _context.next = 9;
                 return this.generateEntries();
 
-              case 8:
-                _context.next = 10;
+              case 9:
+                _context.next = 11;
                 return this.buildEntries();
 
-              case 10:
-                _context.next = 12;
+              case 11:
+                _context.next = 13;
                 return this.generateRouter();
 
-              case 12:
-                _context.next = 14;
+              case 13:
+                _context.next = 15;
                 return this.buildRouter();
 
-              case 14:
-                _context.next = 16;
+              case 15:
+                _context.next = 17;
                 return this.generateLayout();
 
-              case 16:
-                _context.next = 18;
+              case 17:
+                _context.next = 19;
                 return this.buildLayout();
 
-              case 18:
+              case 19:
               case 'end':
                 return _context.stop();
             }
@@ -6134,26 +6140,31 @@ var Builder = function () {
         }, _callee, this);
       }));
 
-      function build() {
+      function build(_x) {
         return _ref.apply(this, arguments);
       }
 
       return build;
     }()
   }, {
-    key: 'generateFileFromTpl',
+    key: 'checkKeepFiles',
     value: function () {
-      var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2(tpl, option, toDir) {
-        var compiler;
+      var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
         return regenerator.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                compiler = template_1(tpl);
-                _context2.next = 3;
-                return fs.writeFile(toDir, compiler(option), 'utf-8');
+                debug('Checking Keep Files...');
 
-              case 3:
+                if (fs.existsSync(path.resolve(this.her.defaultOptions.rootDir, '.postcssrc.js'))) {
+                  _context2.next = 4;
+                  break;
+                }
+
+                _context2.next = 4;
+                return fs.copy(path.resolve(__dirname, '../.postcssrc.js'), path.resolve(this.her.defaultOptions.rootDir, '.postcssrc.js'));
+
+              case 4:
               case 'end':
                 return _context2.stop();
             }
@@ -6161,11 +6172,11 @@ var Builder = function () {
         }, _callee2, this);
       }));
 
-      function generateFileFromTpl(_x, _x2, _x3) {
+      function checkKeepFiles() {
         return _ref2.apply(this, arguments);
       }
 
-      return generateFileFromTpl;
+      return checkKeepFiles;
     }()
 
     /**
@@ -6203,7 +6214,7 @@ var Builder = function () {
                     }, _callee3, _this);
                   }));
 
-                  return function (_x4) {
+                  return function (_x2) {
                     return _ref4.apply(this, arguments);
                   };
                 }()));
@@ -6290,7 +6301,7 @@ var Builder = function () {
                     }, _callee5, _this2);
                   }));
 
-                  return function (_x5) {
+                  return function (_x3) {
                     return _ref6.apply(this, arguments);
                   };
                 }()));
@@ -6354,7 +6365,7 @@ var Builder = function () {
                     }, _callee7, _this3);
                   }));
 
-                  return function (_x6) {
+                  return function (_x4) {
                     return _ref9.apply(this, arguments);
                   };
                 }()));
@@ -6420,7 +6431,7 @@ var Builder = function () {
                     }, _callee9, _this4);
                   }));
 
-                  return function (_x7) {
+                  return function (_x5) {
                     return _ref12.apply(this, arguments);
                   };
                 }()));
@@ -6504,7 +6515,7 @@ var Builder = function () {
                     }, _callee11, _this5);
                   }));
 
-                  return function (_x8) {
+                  return function (_x6) {
                     return _ref15.apply(this, arguments);
                   };
                 }()));
@@ -6596,10 +6607,13 @@ var Builder = function () {
           while (1) {
             switch (_context14.prev = _context14.next) {
               case 0:
-                _context14.next = 2;
+                debug('Building Layouts...');
+                // 生成路由文件
+                // 1. 读取模板
+                _context14.next = 3;
                 return fs.readFile(path.join(this.templateRoot, 'App.vue'), 'utf-8');
 
-              case 2:
+              case 3:
                 tpl = _context14.sent;
 
 
@@ -6613,10 +6627,10 @@ var Builder = function () {
                     wChunk: wChunk
                   }
                 });
-                _context14.next = 6;
+                _context14.next = 7;
                 return fs.writeFile(path.join(this.generateAppRoot, 'App.vue'), compiler({ layouts: this.layouts }), 'utf-8');
 
-              case 6:
+              case 7:
               case 'end':
                 return _context14.stop();
             }
@@ -6699,11 +6713,10 @@ function styleLoader(baseOption, ext) {
   };var cssLoader = {
     loader: 'css-loader',
     options: {
-      minimize: true,
+      minimize: !baseOption.dev,
       importLoaders: 1,
       sourceMap: baseOption.dev,
       alias: {
-        '/static': path.join(baseOption.srcDir, 'static'),
         '/assets': path.join(baseOption.srcDir, 'assets')
       }
     }
@@ -6714,27 +6727,28 @@ function styleLoader(baseOption, ext) {
     options: {
       sourceMap: baseOption.dev
     }
-  };
 
-  if (!baseOption.dev) {
-    return ExtractTextPlugin.extract({
-      fallback: vueStyleLoader,
-      use: [cssLoader, postcssLoader].concat(_toConsumableArray(loaders)).filter(function (l) {
-        return l;
-      })
-    });
-  }
+    // if (!baseOption.dev) {
+    //   return ExtractTextPlugin.extract({
+    //     fallback: vueStyleLoader,
+    //     use: [
+    //       cssLoader,
+    //       postcssLoader,
+    //       ...loaders
+    //     ].filter(l => l)
+    //   })
+    // }
 
-  // https://github.com/yenshih/style-resources-loader
-  // let styleResourcesLoader
-  // if (this.options.build.styleResources) {
-  //   styleResourcesLoader = {
-  //     loader: 'style-resources-loader',
-  //     options: this.options.build.styleResources
-  //   }
-  // }
+    // https://github.com/yenshih/style-resources-loader
+    // let styleResourcesLoader
+    // if (this.options.build.styleResources) {
+    //   styleResourcesLoader = {
+    //     loader: 'style-resources-loader',
+    //     options: this.options.build.styleResources
+    //   }
+    // }
 
-  return [vueStyleLoader, cssLoader, postcssLoader].concat(_toConsumableArray(loaders)).filter(function (l) {
+  };return [vueStyleLoader, cssLoader, postcssLoader].concat(_toConsumableArray(loaders)).filter(function (l) {
     return l;
   });
 }
@@ -6766,7 +6780,8 @@ function vueLoader(baseOption, builderOption) {
       video: 'src',
       source: 'src',
       object: 'src',
-      embed: 'src'
+      img: 'src',
+      image: 'xlink:href'
     }
   };
 }
@@ -6779,8 +6794,8 @@ var configFactory = function (baseOption, builderOption) {
       return [entryName, path.resolve(builderOption.generateAppRoot, 'entries', entryName, 'index.js')];
     })),
     output: {
-      filename: '[name].[hash].js',
-      chunkFilename: '[name].[chunkhash].js',
+      filename: baseOption.assetsPath + 'js/[name].[hash].js',
+      chunkFilename: baseOption.assetsPath + 'js/[name].[chunkhash].js',
       path: path.resolve(baseOption.rootDir, 'dist'),
       publicPath: '/'
     },
@@ -6792,19 +6807,16 @@ var configFactory = function (baseOption, builderOption) {
     resolve: {
       extensions: ['.js', '.json', '.vue', '.ts'],
       alias: {
+        '~': path.join(baseOption.srcDir),
         '@': path.join(baseOption.srcDir),
         '@@': path.join(baseOption.rootDir),
-        '@@@': path.join(baseOption.rootDir, '.her')
+        '@@@': path.join(baseOption.rootDir, '.her'),
+        'assets': path.join(baseOption.srcDir, 'assets')
       }
     },
     module: {
       noParse: /es6-promise\.js$/,
-      rules: [
-      // {
-      //   test: /\.vue$/,
-      //   loader: 'vue-loader'
-      // },
-      {
+      rules: [{
         test: /\.vue$/,
         loader: 'vue-loader',
         options: vueLoader(baseOption)
@@ -6814,24 +6826,24 @@ var configFactory = function (baseOption, builderOption) {
         exclude: /node_modules/,
         options: babelOption(baseOption)
       }, { test: /\.css$/, use: styleLoader(baseOption, 'css') }, { test: /\.less$/, use: styleLoader(baseOption, 'less', 'less-loader') }, { test: /\.sass$/, use: styleLoader(baseOption, 'sass', { loader: 'sass-loader', options: { indentedSyntax: true } }) }, { test: /\.scss$/, use: styleLoader(baseOption, 'scss', 'sass-loader') }, { test: /\.styl(us)?$/, use: styleLoader(baseOption, 'stylus', 'stylus-loader') }, {
-        test: /\.(png|jpe?g|gif|svg)$/,
+        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',
         options: {
           limit: 1000, // 1KO
-          name: 'img/[name].[hash:7].[ext]'
+          name: baseOption.assetsPath + 'img/[name].[hash:7].[ext]'
         }
       }, {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         loader: 'url-loader',
         options: {
           limit: 1000, // 1 KO
-          name: 'fonts/[name].[hash:7].[ext]'
+          name: baseOption.assetsPath + 'fonts/[name].[hash:7].[ext]'
         }
       }, {
         test: /\.(webm|mp4)$/,
         loader: 'file-loader',
         options: {
-          name: 'videos/[name].[hash:7].[ext]'
+          name: baseOption.assetsPath + 'videos/[name].[hash:7].[ext]'
         }
       }]
     },
@@ -6858,34 +6870,218 @@ var Server = function () {
     // 服务器实例
     this.server = null;
     this.her = her;
+
+    this.webpackDevMiddleware = null;
+    this.webpackHotMiddleware = null;
+    this.compilersWatching = [];
+    this.webpackStats = her.defaultOptions.dev ? false : {
+      chunks: false,
+      children: false,
+      modules: false,
+      colors: true,
+      excludeAssets: [/.map$/, /index\..+\.html$/]
+    };
   }
 
   _createClass(Server, [{
+    key: 'buildWebpack',
+    value: function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
+        var _this = this;
+
+        var sharedFS, sharedCache;
+        return regenerator.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                // Initialize shared FS and Cache
+                sharedFS = this.her.defaultOptions.dev && new MFS();
+                sharedCache = {};
+
+                this.webpackConfig = configFactory(this.her.defaultOptions, this.her.builder);
+                // Initialize compilers
+                this.compilers = [this.webpackConfig].map(function (compilersOption) {
+                  var compiler = webpack(compilersOption);
+                  // In dev, write files in memory FS (except for DLL)
+                  if (sharedFS) {
+                    compiler.outputFileSystem = sharedFS;
+                  }
+                  compiler.cache = sharedCache;
+                  return compiler;
+                });
+
+                _context2.next = 6;
+                return _Promise.all(this.compilers.map(function () {
+                  var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(compiler) {
+                    var name;
+                    return regenerator.wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            name = compiler.options.name;
+
+                            // --- Dev Build ---
+
+                            if (!_this.her.defaultOptions.dev) {
+                              _context.next = 3;
+                              break;
+                            }
+
+                            return _context.abrupt('return', _this.webpackDev(compiler));
+
+                          case 3:
+                            // --- Production Build ---
+                            compiler.run(function (err, stats) {
+                              /* istanbul ignore if */
+                              if (err) {
+                                throw err;
+                              }
+
+                              // Show build stats for production
+                              console.log(stats.toString(_this.webpackStats)); // eslint-disable-line no-console
+
+                              /* istanbul ignore if */
+                              if (stats.hasErrors()) {
+                                throw new Error('Webpack build exited with errors');
+                              }
+                            });
+
+                          case 4:
+                          case 'end':
+                            return _context.stop();
+                        }
+                      }
+                    }, _callee, _this);
+                  }));
+
+                  return function (_x) {
+                    return _ref2.apply(this, arguments);
+                  };
+                }()));
+
+              case 6:
+              case 'end':
+                return _context2.stop();
+            }
+          }
+        }, _callee2, this);
+      }));
+
+      function buildWebpack() {
+        return _ref.apply(this, arguments);
+      }
+
+      return buildWebpack;
+    }()
+  }, {
+    key: 'webpackDev',
+    value: function webpackDev(compiler) {
+      debug$1('Adding Webpack Middleware...');
+      this.webpackDevMiddleware = pify(webpackDevMiddleware(compiler, {
+        publicPath: this.webpackConfig.output.publicPath,
+        stats: this.webpackStats,
+        noInfo: false,
+        quiet: false,
+        watchOptions: []
+      }));
+
+      this.webpackDevMiddleware.close = pify(this.webpackDevMiddleware.close);
+
+      this.webpackHotMiddleware = pify(webpackHotMiddleware(compiler, {
+        log: false,
+        heartbeat: 10000
+      }));
+
+      this.watchFiles();
+    }
+  }, {
+    key: 'watchFiles',
+    value: function watchFiles() {
+      var _this2 = this;
+
+      debug$1('Adding Watcher');
+      var src = this.her.defaultOptions.srcDir;
+      var patterns = [r(src, 'layouts'), r(src, 'entries'), r(src, 'components'), r(src, 'layouts/*.vue'), r(src, 'layouts/**/*.vue')];
+      this.her.builder.entries.forEach(function (_ref3) {
+        var entryName = _ref3.entryName;
+
+        patterns.push(r(src, entryName), r(src, entryName + '/pages'), r(src, entryName + '/pages/*.vue'), r(src, entryName + '/pages/**/*.vue'));
+      });
+
+      var options = {
+        ignoreInitial: true
+        /* istanbul ignore next */
+      };var refreshFiles = _.debounce(_asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3() {
+        return regenerator.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _context3.next = 2;
+                return _this2.her.builder.build();
+
+              case 2:
+              case 'end':
+                return _context3.stop();
+            }
+          }
+        }, _callee3, _this2);
+      })), 200);
+
+      // Watch for src Files
+      this.filesWatcher = chokidar.watch(patterns, options).on('add', refreshFiles).on('unlink', refreshFiles);
+    }
+  }, {
+    key: 'unwatch',
+    value: function () {
+      var _ref5 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee4() {
+        return regenerator.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                if (this.filesWatcher) {
+                  this.filesWatcher.close();
+                }
+
+                if (this.customFilesWatcher) {
+                  this.customFilesWatcher.close();
+                }
+
+                this.compilersWatching.forEach(function (watching) {
+                  return watching.close();
+                });
+
+                // Stop webpack middleware
+                _context4.next = 5;
+                return this.webpackDevMiddleware.close();
+
+              case 5:
+              case 'end':
+                return _context4.stop();
+            }
+          }
+        }, _callee4, this);
+      }));
+
+      function unwatch() {
+        return _ref5.apply(this, arguments);
+      }
+
+      return unwatch;
+    }()
+  }, {
     key: 'setupMiddlewares',
     value: function setupMiddlewares() {
-      var _this = this;
+      var _this3 = this;
 
-      return new _Promise(function (resolve$$1, reject) {
-        var config = configFactory(_this.her.defaultOptions, _this.her.builder);
-        var compiler = webpack(config);
-        _this.her.defaultOptions.server.middlewares.forEach(function (middleware) {
-          return _this.app.use(middleware);
-        });
-        var devMiddleware = webpackDevMiddleware(compiler, {
-          publicPath: config.output.publicPath,
-          noInfo: true
-        });
-        _this.app.use(webpackHotMiddleware(compiler, {
-          log: false,
-          heartbeat: 2000
-        }));
-        _this.app.use(connectHistoryApiFallback());
-        _this.app.use(devMiddleware);
-        _this.app.use('/static', express.static(path__default.join(_this.her.defaultOptions.rootDir, './static')));
-
-        devMiddleware.waitUntilValid(function () {
-          return resolve$$1();
-        });
+      debug$1('Setuping Middlewares...');
+      this.her.defaultOptions.server.middlewares.forEach(function (middleware) {
+        return _this3.app.use(middleware);
+      });
+      this.app.use(this.webpackHotMiddleware);
+      this.app.use(connectHistoryApiFallback());
+      this.app.use(this.webpackDevMiddleware);
+      this.her.defaultOptions.statics.forEach(function (dir) {
+        _this3.app.use('/' + dir, express.static(path__default.join(_this3.her.defaultOptions.rootDir, './' + dir)));
       });
     }
 
@@ -6896,50 +7092,104 @@ var Server = function () {
      */
 
   }, {
+    key: 'ready',
+    value: function () {
+      var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5() {
+        return regenerator.wrap(function _callee5$(_context5) {
+          while (1) {
+            switch (_context5.prev = _context5.next) {
+              case 0:
+                this.app = express();
+                _context5.next = 3;
+                return this.buildWebpack();
+
+              case 3:
+                this.setupMiddlewares();
+
+              case 4:
+              case 'end':
+                return _context5.stop();
+            }
+          }
+        }, _callee5, this);
+      }));
+
+      function ready() {
+        return _ref6.apply(this, arguments);
+      }
+
+      return ready;
+    }()
+  }, {
     key: 'listen',
     value: function listen(isFirst) {
-      var _this2 = this;
+      var _this4 = this;
 
       return new _Promise(function (resolve$$1, reject) {
-        var _her$defaultOptions$s = _this2.her.defaultOptions.server,
+        var _her$defaultOptions$s = _this4.her.defaultOptions.server,
             host = _her$defaultOptions$s.host,
             port = _her$defaultOptions$s.port;
 
-        _this2.app = express();
-        _this2.setupMiddlewares().then(function () {
-          _this2.server = _this2.app.listen({ host: host, port: port, exclusive: false }, function (err) {
-            if (err) {
-              reject(err);
-            }
-            debug$1('server start');
-            var _host = host === '0.0.0.0' ? 'localhost' : host;
-            console.log('\n' + chalk.bgGreen.black(' OPEN ') + chalk.green(' http://' + _host + ':' + port + '\n'));
-            if (isFirst) {
-              opn('http://' + _host + ':' + port);
-            }
-            resolve$$1();
-          });
+        _this4.server = _this4.app.listen({ host: host, port: port, exclusive: false }, function (err) {
+          if (err) {
+            reject(err);
+          }
+          debug$1('Server Started');
+          var _host = host === '0.0.0.0' ? 'localhost' : host;
+          console.log('\n' + chalk.bgGreen.black(' OPEN ') + chalk.green(' http://' + _host + ':' + port + '\n'));
+          if (isFirst) {
+            opn('http://' + _host + ':' + port);
+          }
+          resolve$$1();
         });
       });
     }
   }, {
     key: 'stop',
     value: function stop() {
-      var _this3 = this;
+      var _this5 = this;
 
-      return new _Promise(function (resolve$$1, reject) {
-        if (_this3.server) {
-          _this3.server.close(function (err) {
-            debug$1('server closed');
-            if (err) {
-              return reject(err);
+      return new _Promise(function () {
+        var _ref7 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee6(resolve$$1, reject) {
+          return regenerator.wrap(function _callee6$(_context6) {
+            while (1) {
+              switch (_context6.prev = _context6.next) {
+                case 0:
+                  if (!_this5.server) {
+                    _context6.next = 7;
+                    break;
+                  }
+
+                  debug$1('Server Stoping...');
+                  _context6.next = 4;
+                  return _this5.unwatch();
+
+                case 4:
+                  _this5.server.close(function (err) {
+                    debug$1('Server Closed');
+                    if (err) {
+                      return reject(err);
+                    }
+                    resolve$$1();
+                  });
+                  _context6.next = 8;
+                  break;
+
+                case 7:
+                  resolve$$1();
+
+                case 8:
+                case 'end':
+                  return _context6.stop();
+              }
             }
-            resolve$$1();
-          });
-        } else {
-          resolve$$1();
-        }
-      });
+          }, _callee6, _this5);
+        }));
+
+        return function (_x2, _x3) {
+          return _ref7.apply(this, arguments);
+        };
+      }());
     }
   }]);
 
@@ -6971,19 +7221,20 @@ var Her$1 = function () {
     value: function setConfig(options) {
       this.defaultOptions = defaultsDeep_1(options, {
         // TODO: 添加默认配置
-
         // 是否是开发模式
         dev: false,
-
         // 全局变量
         env: {},
-
         // 服务器配置
         server: {
           host: '0.0.0.0',
           port: '3000',
           middlewares: []
         },
+        // 开发模式外部静态文件路径
+        statics: ['static'],
+        // 静态文件路径
+        assetsPath: '__her__/',
 
         srcDir: '',
         rootDir: ''
@@ -6997,7 +7248,7 @@ var Her$1 = function () {
      */
 
   }, {
-    key: 'serverStart',
+    key: 'start',
     value: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(isFirst) {
         return regenerator.wrap(function _callee$(_context) {
@@ -7005,13 +7256,9 @@ var Her$1 = function () {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return this.builder.build();
-
-              case 2:
-                _context.next = 4;
                 return this.server.listen(isFirst);
 
-              case 4:
+              case 2:
               case 'end':
                 return _context.stop();
             }
@@ -7019,11 +7266,11 @@ var Her$1 = function () {
         }, _callee, this);
       }));
 
-      function serverStart(_x) {
+      function start(_x) {
         return _ref.apply(this, arguments);
       }
 
-      return serverStart;
+      return start;
     }()
 
     /**
@@ -7033,7 +7280,7 @@ var Her$1 = function () {
      */
 
   }, {
-    key: 'serverStop',
+    key: 'stop',
     value: function () {
       var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
         return regenerator.wrap(function _callee2$(_context2) {
@@ -7051,11 +7298,11 @@ var Her$1 = function () {
         }, _callee2, this);
       }));
 
-      function serverStop() {
+      function stop() {
         return _ref2.apply(this, arguments);
       }
 
-      return serverStop;
+      return stop;
     }()
 
     /**

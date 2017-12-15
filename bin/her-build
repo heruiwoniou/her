@@ -1,0 +1,59 @@
+#!/usr/bin / env node
+
+process.env.DEBUG = process.env.DEBUG || 'her:*'
+
+const Her = require('../')
+const chokidar = require('chokidar')
+const parseArgs = require('minimist')
+const debug = require('debug')('her:config')
+const chalk = require('chalk')
+const fs = require('fs-extra')
+const path = require('path')
+debug.color = 2
+const { remove } = fs
+const { resolve } = path
+const argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    c: 'config-file'
+  },
+  string: ['c'],
+  default: {
+    c: 'her.config.js'
+  }
+})
+
+const rootDir = resolve(argv._[0] || '.')
+const herConfigFile = resolve(argv['config-file']);
+
+let getConifg = function () {
+  let options
+  if (fs.existsSync(herConfigFile)) {
+    delete require.cache[herConfigFile]
+    options = require(herConfigFile)
+  } else if (argv['config-file'] !== 'her.config.js') {
+    console.error(`> Could not load config file ${argv['config-file']}`)
+    process.exit(1)
+  }
+  if (typeof options.rootDir !== 'tring') {
+    options.rootDir = rootDir
+  }
+
+  if (typeof options.srcDir !== 'string') {
+    options.srcDir = path.join(rootDir, 'src')
+  }
+
+  // Force development mode for add hot reloading and watching changes
+  options.dev = false
+
+  return options;
+}
+let config = getConifg()
+let instance = new Her(config);
+
+
+Promise.resolve()
+  .then(() => remove(resolve(config.rootDir, 'dist')))
+  .then(() => instance.builder.build(true))
+  .then(() => instance.server.buildWebpack())
+  .catch((err) => { throw err })
+

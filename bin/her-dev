@@ -7,7 +7,7 @@ const chokidar = require('chokidar')
 const parseArgs = require('minimist')
 const debug = require('debug')('her:config')
 const chalk = require('chalk')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 debug.color = 2
 const { resolve } = require('path')
@@ -22,13 +22,13 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 const rootDir = resolve(argv._[0] || '.')
-const nuxtConfigFile = resolve(argv['config-file']);
+const herConfigFile = resolve(argv['config-file']);
 
 let getConifg = function () {
   let options
-  if (fs.existsSync(nuxtConfigFile)) {
-    delete require.cache[nuxtConfigFile]
-    options = require(nuxtConfigFile)
+  if (fs.existsSync(herConfigFile)) {
+    delete require.cache[herConfigFile]
+    options = require(herConfigFile)
   } else if (argv['config-file'] !== 'her.config.js') {
     console.error(`> Could not load config file ${argv['config-file']}`)
     process.exit(1)
@@ -47,24 +47,42 @@ let getConifg = function () {
   return options;
 }
 
-let herInstance;
-let timer;
+let needToRestart = false
+
+let startDev = function (oldInstance) {
+  let config = getConifg()
+  let instance = new Her(config);
+
+  const onError = (err, instance) => {
+    debug('Error while reloading [nuxt.config.js]', err)
+    return Promise.resolve(instance) // Wait for next reload
+  }
+
+  return Promise.resolve()
+    .then(() => oldInstance && oldInstance ? (oldInstance.stop() || oldInstance.server.unwatch()) : Promise.resolve())
+    .then(() => instance.builder.build(true))
+    .then(() => instance.server.ready())
+    .then(() => instance.start(!!!oldInstance))
+    .then(() => instance)
+    .catch((err) => { onError(err, instance) })
+}
+
+let dev = startDev()
+
 chokidar
-  .watch([nuxtConfigFile])
+  .watch([herConfigFile], { ignoreInitial: true })
   .on('all', function () {
     try {
-      let config = getConifg()
-      if (herInstance) {
-        debug('[her.config.js] changed')
-        herInstance.serverStop().then(function () {
-          herInstance.setConfig(config)
-          setTimeout(() => herInstance.serverStart(), 5000)
-        })
-      }
-      else {
-        herInstance = new Her(config);
-        herInstance.serverStart(true)
-      }
+      debug('[her.config.js] changed')
+      needToRestart = true
+      dev = dev.then((instance) => {
+        if (needToRestart === false) return instance
+        needToRestart = false
+
+        debug('Rebuilding the app...')
+        return startDev(instance)
+      })
+
     } catch (e) {
       console.log('\n' + chalk.bgRed.white(' ERROR ') + '\n')
       console.error(e)
