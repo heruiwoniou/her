@@ -6093,7 +6093,7 @@ var Builder = function () {
             switch (_context.prev = _context.next) {
               case 0:
                 if (!isRoot) {
-                  _context.next = 7;
+                  _context.next = 9;
                   break;
                 }
 
@@ -6106,33 +6106,37 @@ var Builder = function () {
 
               case 5:
                 _context.next = 7;
-                return this.buildBaseFiles();
+                return fs.mkdirp(path.join(this.generateAppRoot, 'components'));
 
               case 7:
                 _context.next = 9;
-                return this.generateEntries();
+                return this.buildBaseFiles();
 
               case 9:
                 _context.next = 11;
-                return this.buildEntries();
+                return this.generateEntries();
 
               case 11:
                 _context.next = 13;
-                return this.generateRouter();
+                return this.buildEntries();
 
               case 13:
                 _context.next = 15;
-                return this.buildRouter();
+                return this.generateRouter();
 
               case 15:
                 _context.next = 17;
-                return this.generateLayout();
+                return this.buildRouter();
 
               case 17:
                 _context.next = 19;
-                return this.buildLayout();
+                return this.generateLayout();
 
               case 19:
+                _context.next = 21;
+                return this.buildLayout();
+
+              case 21:
               case 'end':
                 return _context.stop();
             }
@@ -6197,16 +6201,26 @@ var Builder = function () {
               case 0:
                 debug('Building Base Files...');
                 _context4.next = 3;
-                return _Promise.all(['entryFactory.js', 'utils.js'].map(function () {
+                return _Promise.all(['components/content.vue', 'components/error.vue', 'components/loading.vue', 'entryFactory.js', 'utils.js'].map(function () {
                   var _ref4 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3(fileName) {
+                    var tpl, compiler;
                     return regenerator.wrap(function _callee3$(_context3) {
                       while (1) {
                         switch (_context3.prev = _context3.next) {
                           case 0:
                             _context3.next = 2;
-                            return fs.copy(path.join(_this.templateRoot, fileName), path.join(_this.generateAppRoot, fileName));
+                            return fs.readFile(path.join(_this.templateRoot, fileName), 'utf-8');
 
                           case 2:
+                            tpl = _context3.sent;
+
+
+                            // 2. 生成文件
+                            compiler = template_1(tpl);
+                            _context3.next = 6;
+                            return fs.writeFile(path.join(_this.generateAppRoot, fileName), compiler({ baseOption: _this.her.defaultOptions }), 'utf-8');
+
+                          case 6:
                           case 'end':
                             return _context3.stop();
                         }
@@ -6849,8 +6863,9 @@ var configFactory = function (baseOption, builderOption) {
     },
     plugins: [].concat(_toConsumableArray(builderOption.entries.map(function (_ref2, i) {
       var entryName = _ref2.entryName;
+
       return new HtmlWebpackPlugin({
-        filename: i == 0 ? 'index.html' : entryName + '.html',
+        filename: baseOption.entry && baseOption.entry == entryName || !baseOption.entry && i == 0 ? 'index.html' : entryName + '.html',
         template: path.resolve(baseOption.srcDir, 'entries', entryName, 'index.html'),
         chunks: [entryName]
       });
@@ -7231,6 +7246,14 @@ var Her$1 = function () {
           port: '3000',
           middlewares: []
         },
+        loading: {
+          color: 'black',
+          failedColor: 'red',
+          height: '2px',
+          duration: 5000,
+          rtl: false
+        },
+        entry: '',
         // 开发模式外部静态文件路径
         statics: ['static'],
         // 静态文件路径

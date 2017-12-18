@@ -1,9 +1,11 @@
 <template>
   <div id="__her__">
+    <loading ref="loading"></loading>
     <component v-if="layout" :is="layout"></component>
   </div>
 </template>
 <script>
+import Loading from './components/loading'
 
 let layouts = {
 <%
@@ -16,11 +18,35 @@ layoutsKeys.forEach(function (key, i) { %>
 
 let resolvedLayouts = {}
 export default {
+  components: {
+    Loading
+  },
   data: () => ({
     layout: null,
-    layoutName: ""
+    layoutName: "",
+    err: null,
+    dateErr: null
   }),
+  mounted(){
+    this.$loading = this.$refs.loading
+  },
+  watch: {
+    'err': 'errorChanged'
+  },
   methods: {
+    error(err){
+      err = err || null;
+      if (typeof err === 'string') err = { statusCode: 500, message: err }
+      this.dateErr = Date.now()
+      this.err = err
+      return err
+    },
+    errorChanged () {
+      if (this.err && this.$loading) {
+        if (this.$loading.fail) this.$loading.fail()
+        if (this.$loading.finish) this.$loading.finish()
+      }
+    },
     setLayout(layout) {
       if (!layout || !resolvedLayouts["_" + layout]) layout = "default";
       this.layoutName = layout;
