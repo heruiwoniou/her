@@ -6805,7 +6805,10 @@ var configFactory = function (baseOption, builderOption) {
     devtool: baseOption.dev ? 'cheap-module-eval-source-map' : false,
     entry: fromPairs_1(builderOption.entries.map(function (_ref) {
       var entryName = _ref.entryName;
-      return [entryName, path.resolve(builderOption.generateAppRoot, 'entries', entryName, 'index.js')];
+
+      var src = path.resolve(builderOption.generateAppRoot, 'entries', entryName, 'index.js');
+      src = baseOption.dev ? [path.resolve(__dirname, '../lib/config/client')].concat(src) : src;
+      return [entryName, src];
     })),
     output: {
       filename: baseOption.assetsPath + 'js/[name].[hash].js',
@@ -6869,7 +6872,7 @@ var configFactory = function (baseOption, builderOption) {
         template: path.resolve(baseOption.srcDir, 'entries', entryName, 'index.html'),
         chunks: [entryName]
       });
-    })))
+    })), _toConsumableArray(baseOption.dev ? [new webpack.HotModuleReplacementPlugin()] : []))
   };
 };
 
