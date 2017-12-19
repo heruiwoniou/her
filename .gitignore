@@ -3,5 +3,4 @@ node_modules/
 .postcssrc.js
 her.config.js
 npm-debug.log.*
-src/
 dist/

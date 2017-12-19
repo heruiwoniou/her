@@ -24,7 +24,6 @@ const argv = parseArgs(process.argv.slice(2), {
 
 const rootDir = resolve(argv._[0] || '.')
 const herConfigFile = resolve(argv['config-file']);
-
 let getConifg = function () {
   let options
   if (fs.existsSync(herConfigFile)) {

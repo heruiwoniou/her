@@ -21,6 +21,8 @@ var webpackDevMiddleware = _interopDefault(require('webpack-dev-middleware'));
 var webpackHotMiddleware = _interopDefault(require('webpack-hot-middleware'));
 var connectHistoryApiFallback = _interopDefault(require('connect-history-api-fallback'));
 var HtmlWebpackPlugin = _interopDefault(require('html-webpack-plugin'));
+var ExtractTextPlugin = _interopDefault(require('extract-text-webpack-plugin'));
+var OptimizeCSSPlugin = _interopDefault(require('optimize-css-assets-webpack-plugin'));
 var chokidar = _interopDefault(require('chokidar'));
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -6734,7 +6736,7 @@ function styleLoader(baseOption, ext) {
     }
     return _Object$assign({
       options: {
-        sourceMap: baseOption.dev
+        sourceMap: process.env.NODE_ENV !== 'production'
       }
     }, loader);
   });
@@ -6743,7 +6745,7 @@ function styleLoader(baseOption, ext) {
   var postcssLoader = {
     loader: 'postcss-loader',
     options: {
-      sourceMap: baseOption.dev
+      sourceMap: process.env.NODE_ENV !== 'production'
     }
 
     // https://github.com/webpack-contrib/css-loader
@@ -6752,7 +6754,7 @@ function styleLoader(baseOption, ext) {
     options: {
       minimize: !baseOption.dev,
       importLoaders: 1,
-      sourceMap: baseOption.dev,
+      sourceMap: process.env.NODE_ENV !== 'production',
       alias: {
         '/assets': path.join(baseOption.srcDir, 'assets')
       }
@@ -6762,30 +6764,29 @@ function styleLoader(baseOption, ext) {
   };var vueStyleLoader = {
     loader: 'vue-style-loader',
     options: {
-      sourceMap: baseOption.dev
+      sourceMap: process.env.NODE_ENV !== 'production'
     }
+  };
 
-    // if (!baseOption.dev) {
-    //   return ExtractTextPlugin.extract({
-    //     fallback: vueStyleLoader,
-    //     use: [
-    //       cssLoader,
-    //       postcssLoader,
-    //       ...loaders
-    //     ].filter(l => l)
-    //   })
-    // }
+  if (!baseOption.dev) {
+    return ExtractTextPlugin.extract({
+      fallback: vueStyleLoader,
+      use: [cssLoader, postcssLoader].concat(_toConsumableArray(loaders)).filter(function (l) {
+        return l;
+      })
+    });
+  }
 
-    // https://github.com/yenshih/style-resources-loader
-    // let styleResourcesLoader
-    // if (this.options.build.styleResources) {
-    //   styleResourcesLoader = {
-    //     loader: 'style-resources-loader',
-    //     options: this.options.build.styleResources
-    //   }
-    // }
+  // https://github.com/yenshih/style-resources-loader
+  // let styleResourcesLoader
+  // if (this.options.build.styleResources) {
+  //   styleResourcesLoader = {
+  //     loader: 'style-resources-loader',
+  //     options: this.options.build.styleResources
+  //   }
+  // }
 
-  };return [vueStyleLoader, cssLoader, postcssLoader].concat(_toConsumableArray(loaders)).filter(function (l) {
+  return [vueStyleLoader, cssLoader, postcssLoader].concat(_toConsumableArray(loaders)).filter(function (l) {
     return l;
   });
 }
@@ -6825,7 +6826,7 @@ function vueLoader(baseOption, builderOption) {
 
 var configFactory = function (baseOption, builderOption) {
   return {
-    devtool: baseOption.dev ? 'cheap-module-eval-source-map' : false,
+    devtool: process.env.NODE_ENV !== 'production' ? baseOption.dev ? 'cheap-module-eval-source-map' : '#source-map' : false,
     entry: fromPairs_1(builderOption.entries.map(function (_ref) {
       var entryName = _ref.entryName;
 
@@ -6847,6 +6848,7 @@ var configFactory = function (baseOption, builderOption) {
     resolve: {
       extensions: ['.js', '.json', '.vue', '.ts'],
       alias: {
+        'vue$': 'vue/dist/vue.esm.js',
         '~': path.join(baseOption.srcDir),
         '@': path.join(baseOption.srcDir),
         '@@': path.join(baseOption.rootDir),
@@ -6869,14 +6871,14 @@ var configFactory = function (baseOption, builderOption) {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',
         options: {
-          limit: 1000, // 1KO
+          limit: 10000, // 1KO
           name: baseOption.assetsPath + 'img/[name].[hash:7].[ext]'
         }
       }, {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         loader: 'url-loader',
         options: {
-          limit: 1000, // 1 KO
+          limit: 10000, // 1 KO
           name: baseOption.assetsPath + 'fonts/[name].[hash:7].[ext]'
         }
       }, {
@@ -6893,9 +6895,36 @@ var configFactory = function (baseOption, builderOption) {
       return new HtmlWebpackPlugin({
         filename: baseOption.entry && baseOption.entry == entryName || !baseOption.entry && i == 0 ? 'index.html' : entryName + '.html',
         template: path.resolve(baseOption.srcDir, 'entries', entryName, 'index.html'),
-        chunks: [entryName]
+        inject: true,
+        chunksSortMode: 'dependency',
+        minify: baseOption.dev ? {} : {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeAttributeQuotes: true
+        },
+        chunks: [].concat(_toConsumableArray(baseOption.dev ? [] : ['manifest', 'vendor']), [entryName])
       });
-    })), _toConsumableArray(baseOption.dev ? [new webpack.HotModuleReplacementPlugin()] : []))
+    })), _toConsumableArray(baseOption.dev ? [new webpack.HotModuleReplacementPlugin()] : [new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      },
+      sourceMap: process.env.NODE_ENV !== 'production'
+    }), new ExtractTextPlugin({
+      filename: baseOption.assetsPath + 'css/[name].[contenthash].css'
+    }), new OptimizeCSSPlugin({
+      cssProcessorOptions: {
+        safe: true
+      }
+    }), new webpack.HashedModuleIdsPlugin(), new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      minChunks: function minChunks(module) {
+        // any required modules inside node_modules are extracted to vendor
+        return module.resource && /\.js$/.test(module.resource) && module.resource.indexOf(path.join(__dirname, '../node_modules')) === 0;
+      }
+    }), new webpack.optimize.CommonsChunkPlugin({
+      name: 'manifest',
+      chunks: ['vendor']
+    })]))
   };
 };
 
@@ -6927,13 +6956,13 @@ var Server = function () {
   _createClass(Server, [{
     key: 'buildWebpack',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
         var _this = this;
 
-        var sharedFS, sharedCache, compiler;
-        return regenerator.wrap(function _callee2$(_context2) {
+        var sharedFS, sharedCache;
+        return regenerator.wrap(function _callee$(_context) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context.prev = _context.next) {
               case 0:
                 // Initialize shared FS and Cache
                 sharedFS = this.her.defaultOptions.dev && new MFS();
@@ -6941,9 +6970,6 @@ var Server = function () {
 
                 this.webpackConfig = configFactory(this.her.defaultOptions, this.her.builder);
                 // Initialize compilers
-
-                compiler = webpack(webpackConfig);
-
 
                 this.compilers = [this.webpackConfig].map(function (compilersOption) {
                   var compiler = webpack(compilersOption);
@@ -6955,61 +6981,39 @@ var Server = function () {
                   return compiler;
                 });
 
-                _context2.next = 7;
-                return _Promise.all(this.compilers.map(function () {
-                  var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(compiler) {
-                    var name;
-                    return regenerator.wrap(function _callee$(_context) {
-                      while (1) {
-                        switch (_context.prev = _context.next) {
-                          case 0:
-                            name = compiler.options.name;
-
-                            // --- Dev Build ---
-
-                            if (!_this.her.defaultOptions.dev) {
-                              _context.next = 3;
-                              break;
-                            }
-
-                            return _context.abrupt('return', _this.webpackDev(compiler));
-
-                          case 3:
-                            // --- Production Build ---
-                            compiler.run(function (err, stats) {
-                              /* istanbul ignore if */
-                              if (err) {
-                                throw err;
-                              }
-
-                              // Show build stats for production
-                              console.log(stats.toString(_this.webpackStats)); // eslint-disable-line no-console
-
-                              /* istanbul ignore if */
-                              if (stats.hasErrors()) {
-                                throw new Error('Webpack build exited with errors');
-                              }
-                            });
-
-                          case 4:
-                          case 'end':
-                            return _context.stop();
-                        }
+                _context.next = 6;
+                return _Promise.all(this.compilers.map(function (compiler) {
+                  var name = compiler.options.name;
+                  // --- Dev Build ---
+                  if (_this.her.defaultOptions.dev) {
+                    return _this.webpackDev(compiler);
+                  }
+                  // --- Production Build ---
+                  return new _Promise(function (resolve$$1, reject) {
+                    compiler.run(function (err, stats) {
+                      /* istanbul ignore if */
+                      if (err) {
+                        throw err;
                       }
-                    }, _callee, _this);
-                  }));
 
-                  return function (_x) {
-                    return _ref2.apply(this, arguments);
-                  };
-                }()));
+                      // Show build stats for production
+                      console.log(stats.toString(_this.webpackStats)); // eslint-disable-line no-console
 
-              case 7:
+                      /* istanbul ignore if */
+                      if (stats.hasErrors()) {
+                        throw new Error('Webpack build exited with errors');
+                      }
+                      resolve$$1();
+                    });
+                  });
+                }));
+
+              case 6:
               case 'end':
-                return _context2.stop();
+                return _context.stop();
             }
           }
-        }, _callee2, this);
+        }, _callee, this);
       }));
 
       function buildWebpack() {
@@ -7021,34 +7025,37 @@ var Server = function () {
   }, {
     key: 'webpackDev',
     value: function webpackDev(compiler) {
-      debug$1('Adding Webpack Middleware...');
-      this.webpackDevMiddleware = pify(webpackDevMiddleware(compiler, {
-        publicPath: this.webpackConfig.output.publicPath,
-        // // stats: this.webpackStats,
-        // noInfo: false,
-        // quiet: false,
-        watchOptions: []
-      }));
+      var _this2 = this;
 
-      this.webpackDevMiddleware.close = pify(this.webpackDevMiddleware.close);
+      return new _Promise(function (resolve$$1, reject) {
+        debug$1('Adding Webpack Middleware...');
+        _this2.webpackDevMiddleware = pify(webpackDevMiddleware(compiler, {
+          publicPath: _this2.webpackConfig.output.publicPath,
+          // // stats: this.webpackStats,
+          // noInfo: false,
+          // quiet: false,
+          watchOptions: []
+        }));
+        _this2.webpackDevMiddleware.close = pify(_this2.webpackDevMiddleware.close);
 
-      this.webpackHotMiddleware = pify(webpackHotMiddleware(compiler, {
-        log: false,
-        heartbeat: 10000
-      }));
-
-      this.watchFiles();
+        _this2.webpackHotMiddleware = pify(webpackHotMiddleware(compiler, {
+          log: false,
+          heartbeat: 10000
+        }));
+        _this2.watchFiles();
+        resolve$$1();
+      });
     }
   }, {
     key: 'watchFiles',
     value: function watchFiles() {
-      var _this2 = this;
+      var _this3 = this;
 
       debug$1('Adding Watcher');
       var src = this.her.defaultOptions.srcDir;
       var patterns = [r(src, 'layouts'), r(src, 'entries'), r(src, 'components'), r(src, 'layouts/*.vue'), r(src, 'layouts/**/*.vue')];
-      this.her.builder.entries.forEach(function (_ref3) {
-        var entryName = _ref3.entryName;
+      this.her.builder.entries.forEach(function (_ref2) {
+        var entryName = _ref2.entryName;
 
         patterns.push(r(src, entryName), r(src, entryName + '/pages'), r(src, entryName + '/pages/*.vue'), r(src, entryName + '/pages/**/*.vue'));
       });
@@ -7056,20 +7063,20 @@ var Server = function () {
       var options = {
         ignoreInitial: true
         /* istanbul ignore next */
-      };var refreshFiles = _.debounce(_asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3() {
-        return regenerator.wrap(function _callee3$(_context3) {
+      };var refreshFiles = _.debounce(_asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
+        return regenerator.wrap(function _callee2$(_context2) {
           while (1) {
-            switch (_context3.prev = _context3.next) {
+            switch (_context2.prev = _context2.next) {
               case 0:
-                _context3.next = 2;
-                return _this2.her.builder.build();
+                _context2.next = 2;
+                return _this3.her.builder.build();
 
               case 2:
               case 'end':
-                return _context3.stop();
+                return _context2.stop();
             }
           }
-        }, _callee3, _this2);
+        }, _callee2, _this3);
       })), 200);
 
       // Watch for src Files
@@ -7078,10 +7085,10 @@ var Server = function () {
   }, {
     key: 'unwatch',
     value: function () {
-      var _ref5 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee4() {
-        return regenerator.wrap(function _callee4$(_context4) {
+      var _ref4 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3() {
+        return regenerator.wrap(function _callee3$(_context3) {
           while (1) {
-            switch (_context4.prev = _context4.next) {
+            switch (_context3.prev = _context3.next) {
               case 0:
                 if (this.filesWatcher) {
                   this.filesWatcher.close();
@@ -7096,19 +7103,19 @@ var Server = function () {
                 });
 
                 // Stop webpack middleware
-                _context4.next = 5;
+                _context3.next = 5;
                 return this.webpackDevMiddleware.close();
 
               case 5:
               case 'end':
-                return _context4.stop();
+                return _context3.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee3, this);
       }));
 
       function unwatch() {
-        return _ref5.apply(this, arguments);
+        return _ref4.apply(this, arguments);
       }
 
       return unwatch;
@@ -7116,20 +7123,20 @@ var Server = function () {
   }, {
     key: 'setupMiddlewares',
     value: function setupMiddlewares() {
-      var _this3 = this;
+      var _this4 = this;
 
       debug$1('Setuping Middlewares...');
       this.her.defaultOptions.server.middlewares.forEach(function (middleware) {
-        return _this3.app.use(middleware);
+        return _this4.app.use(middleware);
       });
       this.app.use(this.webpackHotMiddleware);
       this.app.use(connectHistoryApiFallback());
       this.app.use(this.webpackDevMiddleware);
       this.her.defaultOptions.statics.forEach(function (dir) {
-        _this3.app.use('/' + dir, express.static(path__default.join(_this3.her.defaultOptions.rootDir, './' + dir)));
+        _this4.app.use('/' + dir, express.static(path__default.join(_this4.her.defaultOptions.rootDir, './' + dir)));
       });
       return new _Promise(function (resolve$$1, reject) {
-        _this3.webpackDevMiddleware.waitUntilValid(resolve$$1);
+        _this4.webpackDevMiddleware.waitUntilValid(resolve$$1);
       });
     }
 
@@ -7142,33 +7149,29 @@ var Server = function () {
   }, {
     key: 'ready',
     value: function () {
-      var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5() {
-        return regenerator.wrap(function _callee5$(_context5) {
+      var _ref5 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee4() {
+        return regenerator.wrap(function _callee4$(_context4) {
           while (1) {
-            switch (_context5.prev = _context5.next) {
+            switch (_context4.prev = _context4.next) {
               case 0:
                 this.app = express();
-                _context5.next = 3;
+                _context4.next = 3;
                 return this.buildWebpack();
 
               case 3:
-                _context5.next = 5;
+                _context4.next = 5;
                 return this.setupMiddlewares();
 
               case 5:
-                _context5.next = 7;
-                return waitFor(10000);
-
-              case 7:
               case 'end':
-                return _context5.stop();
+                return _context4.stop();
             }
           }
-        }, _callee5, this);
+        }, _callee4, this);
       }));
 
       function ready() {
-        return _ref6.apply(this, arguments);
+        return _ref5.apply(this, arguments);
       }
 
       return ready;
@@ -7176,14 +7179,14 @@ var Server = function () {
   }, {
     key: 'listen',
     value: function listen(isFirst) {
-      var _this4 = this;
+      var _this5 = this;
 
       return new _Promise(function (resolve$$1, reject) {
-        var _her$defaultOptions$s = _this4.her.defaultOptions.server,
+        var _her$defaultOptions$s = _this5.her.defaultOptions.server,
             host = _her$defaultOptions$s.host,
             port = _her$defaultOptions$s.port;
 
-        _this4.server = _this4.app.listen({ host: host, port: port, exclusive: false }, function (err) {
+        _this5.server = _this5.app.listen({ host: host, port: port, exclusive: false }, function (err) {
           if (err) {
             reject(err);
           }
@@ -7200,32 +7203,32 @@ var Server = function () {
   }, {
     key: 'stop',
     value: function stop() {
-      var _this5 = this;
+      var _this6 = this;
 
       return new _Promise(function () {
-        var _ref7 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee6(resolve$$1, reject) {
-          return regenerator.wrap(function _callee6$(_context6) {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5(resolve$$1, reject) {
+          return regenerator.wrap(function _callee5$(_context5) {
             while (1) {
-              switch (_context6.prev = _context6.next) {
+              switch (_context5.prev = _context5.next) {
                 case 0:
-                  if (!_this5.server) {
-                    _context6.next = 7;
+                  if (!_this6.server) {
+                    _context5.next = 7;
                     break;
                   }
 
                   debug$1('Server Stoping...');
-                  _context6.next = 4;
-                  return _this5.unwatch();
+                  _context5.next = 4;
+                  return _this6.unwatch();
 
                 case 4:
-                  _this5.server.close(function (err) {
+                  _this6.server.close(function (err) {
                     debug$1('Server Closed');
                     if (err) {
                       return reject(err);
                     }
                     resolve$$1();
                   });
-                  _context6.next = 8;
+                  _context5.next = 8;
                   break;
 
                 case 7:
@@ -7233,14 +7236,14 @@ var Server = function () {
 
                 case 8:
                 case 'end':
-                  return _context6.stop();
+                  return _context5.stop();
               }
             }
-          }, _callee6, _this5);
+          }, _callee5, _this6);
         }));
 
-        return function (_x2, _x3) {
-          return _ref7.apply(this, arguments);
+        return function (_x, _x2) {
+          return _ref6.apply(this, arguments);
         };
       }());
     }
