@@ -4023,6 +4023,29 @@ function wp() {
   return p;
 }
 
+var waitFor = function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(ms) {
+    return regenerator.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            return _context.abrupt('return', new _Promise(function (resolve$$1) {
+              return setTimeout(resolve$$1, ms || 0);
+            }));
+
+          case 1:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }));
+
+  return function waitFor(_x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
 function relativeTo() {
   var args = Array.prototype.slice.apply(arguments);
   var dir = args.shift();
@@ -6907,7 +6930,7 @@ var Server = function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
         var _this = this;
 
-        var sharedFS, sharedCache;
+        var sharedFS, sharedCache, compiler;
         return regenerator.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
@@ -6918,6 +6941,10 @@ var Server = function () {
 
                 this.webpackConfig = configFactory(this.her.defaultOptions, this.her.builder);
                 // Initialize compilers
+
+                compiler = webpack(webpackConfig);
+
+
                 this.compilers = [this.webpackConfig].map(function (compilersOption) {
                   var compiler = webpack(compilersOption);
                   // In dev, write files in memory FS (except for DLL)
@@ -6928,7 +6955,7 @@ var Server = function () {
                   return compiler;
                 });
 
-                _context2.next = 6;
+                _context2.next = 7;
                 return _Promise.all(this.compilers.map(function () {
                   var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(compiler) {
                     var name;
@@ -6977,7 +7004,7 @@ var Server = function () {
                   };
                 }()));
 
-              case 6:
+              case 7:
               case 'end':
                 return _context2.stop();
             }
@@ -6997,9 +7024,9 @@ var Server = function () {
       debug$1('Adding Webpack Middleware...');
       this.webpackDevMiddleware = pify(webpackDevMiddleware(compiler, {
         publicPath: this.webpackConfig.output.publicPath,
-        stats: this.webpackStats,
-        noInfo: false,
-        quiet: false,
+        // // stats: this.webpackStats,
+        // noInfo: false,
+        // quiet: false,
         watchOptions: []
       }));
 
@@ -7101,6 +7128,9 @@ var Server = function () {
       this.her.defaultOptions.statics.forEach(function (dir) {
         _this3.app.use('/' + dir, express.static(path__default.join(_this3.her.defaultOptions.rootDir, './' + dir)));
       });
+      return new _Promise(function (resolve$$1, reject) {
+        _this3.webpackDevMiddleware.waitUntilValid(resolve$$1);
+      });
     }
 
     /**
@@ -7122,9 +7152,14 @@ var Server = function () {
                 return this.buildWebpack();
 
               case 3:
-                this.setupMiddlewares();
+                _context5.next = 5;
+                return this.setupMiddlewares();
 
-              case 4:
+              case 5:
+                _context5.next = 7;
+                return waitFor(10000);
+
+              case 7:
               case 'end':
                 return _context5.stop();
             }
