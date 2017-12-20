@@ -23,6 +23,7 @@ var HtmlWebpackPlugin = _interopDefault(require('html-webpack-plugin'));
 var ExtractTextPlugin = _interopDefault(require('extract-text-webpack-plugin'));
 var OptimizeCSSPlugin = _interopDefault(require('optimize-css-assets-webpack-plugin'));
 var CompressionWebpackPlugin = _interopDefault(require('compression-webpack-plugin'));
+var LodashModuleReplacementPlugin = _interopDefault(require('lodash-webpack-plugin'));
 var chokidar = _interopDefault(require('chokidar'));
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -6702,6 +6703,7 @@ function babelOption(baseOption) {
   return {
     babelrc: false,
     cacheDirectory: baseOption.dev,
+    plugins: ['lodash'],
     presets: [['vue-app', {
       targets: { ie: 9, uglify: true },
       useBuiltIns: true
@@ -6887,7 +6889,7 @@ var configFactory = function (baseOption, builderOption) {
         },
         chunks: [].concat(_toConsumableArray(baseOption.dev ? [] : ['manifest', 'vendor']), [entryName])
       });
-    })), _toConsumableArray(baseOption.dev ? [new webpack.HotModuleReplacementPlugin()] : [new webpack.optimize.UglifyJsPlugin({
+    })), [new LodashModuleReplacementPlugin()], _toConsumableArray(baseOption.dev ? [new webpack.HotModuleReplacementPlugin()] : [new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
       },
