@@ -1,6 +1,6 @@
 {
   "name": "vue-her",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "vue-frame like-nuxt auto-router webpack Multiple-entry spa",
   "main": "./index.js",
   "bin": {

@@ -47,7 +47,12 @@ module.exports = {
     // ... other
   ],
   styleLoader:{
-    
+    // eg:
+    // stylus: {
+    //   import: [
+    //     path.join(__dirname, './src/styles/vars.styl')
+    //   ]
+    // }
   },
   // Static file storage path
   assetsPath: '__her__/'
