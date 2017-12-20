@@ -30,8 +30,8 @@ export default {
 };
 </script>
 
-<style>
+<style lang="stylus">
 .layout-default ul {
-  background: blue;
+  background: baseColor;
 }
 </style>

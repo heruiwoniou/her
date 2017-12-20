@@ -6731,14 +6731,17 @@ function babelOption(baseOption) {
 function styleLoader(baseOption, ext) {
   var loaders = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
   loaders = (Array.isArray(loaders) ? loaders : [loaders]).map(function (loader) {
+    var options = baseOption.styleLoader[ext] || {};
     if (typeof loader === 'string') {
       loader = { loader: loader };
     }
-    return _Object$assign({
+    var res = defaultsDeep_1(loader, { options: options }, {
       options: {
         sourceMap: process.env.NODE_ENV !== 'production'
       }
-    }, loader);
+    });
+    console.log(res);
+    return res;
   });
 
   // https://github.com/postcss/postcss-loader
@@ -7297,6 +7300,8 @@ var Her$1 = function () {
         entry: '',
         // 开发模式外部静态文件路径
         statics: ['static'],
+        // 样式loader的options设置
+        styleLoader: {},
         // 静态文件路径
         assetsPath: '__her__/',
 
