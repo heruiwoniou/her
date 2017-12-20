@@ -16,13 +16,13 @@ var express = _interopDefault(require('express'));
 var chalk = _interopDefault(require('chalk'));
 var webpack = _interopDefault(require('webpack'));
 var opn = _interopDefault(require('opn'));
-var MFS = _interopDefault(require('memory-fs'));
 var webpackDevMiddleware = _interopDefault(require('webpack-dev-middleware'));
 var webpackHotMiddleware = _interopDefault(require('webpack-hot-middleware'));
 var connectHistoryApiFallback = _interopDefault(require('connect-history-api-fallback'));
 var HtmlWebpackPlugin = _interopDefault(require('html-webpack-plugin'));
 var ExtractTextPlugin = _interopDefault(require('extract-text-webpack-plugin'));
 var OptimizeCSSPlugin = _interopDefault(require('optimize-css-assets-webpack-plugin'));
+var CompressionWebpackPlugin = _interopDefault(require('compression-webpack-plugin'));
 var chokidar = _interopDefault(require('chokidar'));
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -6282,33 +6282,33 @@ var Builder = function () {
   }, {
     key: 'generateEntries',
     value: function () {
-      var _ref5 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee6() {
+      var _ref5 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5() {
         var _this2 = this;
 
         var cwd, files;
-        return regenerator.wrap(function _callee6$(_context6) {
+        return regenerator.wrap(function _callee5$(_context5) {
           while (1) {
-            switch (_context6.prev = _context6.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
                 debug('Generating Entries...');
                 cwd = path.join(this.her.defaultOptions.srcDir, 'entries');
 
                 if (fs__default.existsSync(path.join(this.her.defaultOptions.srcDir, 'entries'))) {
-                  _context6.next = 4;
+                  _context5.next = 4;
                   break;
                 }
 
                 throw new Error('No `entries` directory found in ' + this.her.defaultOptions.srcDir + '.');
 
               case 4:
-                _context6.next = 6;
+                _context5.next = 6;
                 return glob('**/*.html', { cwd: cwd });
 
               case 6:
-                files = _context6.sent;
+                files = _context5.sent;
 
                 if (!(files.length == 0)) {
-                  _context6.next = 9;
+                  _context5.next = 9;
                   break;
                 }
 
@@ -6316,41 +6316,22 @@ var Builder = function () {
 
               case 9:
                 this.entries = [];
-                _context6.next = 12;
-                return _Promise.all(files.map(function () {
-                  var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5(file) {
-                    var entryName, dir;
-                    return regenerator.wrap(function _callee5$(_context5) {
-                      while (1) {
-                        switch (_context5.prev = _context5.next) {
-                          case 0:
-                            entryName = file.slice(0, file.lastIndexOf('/'));
-                            dir = path.join(cwd, entryName);
-
-                            _this2.entries.push({
-                              entryName: entryName,
-                              dir: dir
-                            });
-
-                          case 3:
-                          case 'end':
-                            return _context5.stop();
-                        }
-                      }
-                    }, _callee5, _this2);
-                  }));
-
-                  return function (_x3) {
-                    return _ref6.apply(this, arguments);
-                  };
-                }()));
+                _context5.next = 12;
+                return _Promise.all(files.map(function (file) {
+                  var entryName = file.slice(0, file.lastIndexOf('/'));
+                  var dir = path.join(cwd, entryName);
+                  _this2.entries.push({
+                    entryName: entryName,
+                    dir: dir
+                  });
+                }));
 
               case 12:
               case 'end':
-                return _context6.stop();
+                return _context5.stop();
             }
           }
-        }, _callee6, this);
+        }, _callee5, this);
       }));
 
       function generateEntries() {
@@ -6362,63 +6343,63 @@ var Builder = function () {
   }, {
     key: 'buildEntries',
     value: function () {
-      var _ref7 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee8() {
+      var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee7() {
         var _this3 = this;
 
-        return regenerator.wrap(function _callee8$(_context8) {
+        return regenerator.wrap(function _callee7$(_context7) {
           while (1) {
-            switch (_context8.prev = _context8.next) {
+            switch (_context7.prev = _context7.next) {
               case 0:
                 debug('Building Entry Files...');
-                _context8.next = 3;
+                _context7.next = 3;
                 return _Promise.all(this.entries.map(function () {
-                  var _ref9 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee7(_ref8) {
-                    var entryName = _ref8.entryName,
-                        dir = _ref8.dir;
+                  var _ref8 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee6(_ref7) {
+                    var entryName = _ref7.entryName,
+                        dir = _ref7.dir;
                     var tpl, compiler;
-                    return regenerator.wrap(function _callee7$(_context7) {
+                    return regenerator.wrap(function _callee6$(_context6) {
                       while (1) {
-                        switch (_context7.prev = _context7.next) {
+                        switch (_context6.prev = _context6.next) {
                           case 0:
-                            _context7.next = 2;
+                            _context6.next = 2;
                             return fs.mkdirp(path.join(_this3.generateAppRoot, 'entries', entryName));
 
                           case 2:
-                            _context7.next = 4;
+                            _context6.next = 4;
                             return fs.readFile(path.join(_this3.templateRoot, 'index.js'), 'utf-8');
 
                           case 4:
-                            tpl = _context7.sent;
+                            tpl = _context6.sent;
 
 
                             // 2. 生成文件
                             compiler = template_1(tpl);
-                            _context7.next = 8;
+                            _context6.next = 8;
                             return fs.writeFile(path.join(_this3.generateAppRoot, 'entries', entryName, 'index.js'), compiler({ entryName: entryName }), 'utf-8');
 
                           case 8:
                           case 'end':
-                            return _context7.stop();
+                            return _context6.stop();
                         }
                       }
-                    }, _callee7, _this3);
+                    }, _callee6, _this3);
                   }));
 
-                  return function (_x4) {
-                    return _ref9.apply(this, arguments);
+                  return function (_x3) {
+                    return _ref8.apply(this, arguments);
                   };
                 }()));
 
               case 3:
               case 'end':
-                return _context8.stop();
+                return _context7.stop();
             }
           }
-        }, _callee8, this);
+        }, _callee7, this);
       }));
 
       function buildEntries() {
-        return _ref7.apply(this, arguments);
+        return _ref6.apply(this, arguments);
       }
 
       return buildEntries;
@@ -6432,30 +6413,30 @@ var Builder = function () {
   }, {
     key: 'generateRouter',
     value: function () {
-      var _ref10 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee10() {
+      var _ref9 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee9() {
         var _this4 = this;
 
-        return regenerator.wrap(function _callee10$(_context10) {
+        return regenerator.wrap(function _callee9$(_context9) {
           while (1) {
-            switch (_context10.prev = _context10.next) {
+            switch (_context9.prev = _context9.next) {
               case 0:
                 debug('Generating Routes...');
                 this.routers = [];
-                _context10.next = 4;
+                _context9.next = 4;
                 return _Promise.all(this.entries.map(function () {
-                  var _ref12 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee9(_ref11) {
-                    var entryName = _ref11.entryName,
-                        dir = _ref11.dir;
+                  var _ref11 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee8(_ref10) {
+                    var entryName = _ref10.entryName,
+                        dir = _ref10.dir;
                     var res;
-                    return regenerator.wrap(function _callee9$(_context9) {
+                    return regenerator.wrap(function _callee8$(_context8) {
                       while (1) {
-                        switch (_context9.prev = _context9.next) {
+                        switch (_context8.prev = _context8.next) {
                           case 0:
-                            _context9.next = 2;
+                            _context8.next = 2;
                             return glob('pages/**/*.vue', { cwd: dir });
 
                           case 2:
-                            res = _context9.sent;
+                            res = _context8.sent;
 
                             _this4.routers.push({
                               entryName: entryName,
@@ -6464,27 +6445,27 @@ var Builder = function () {
 
                           case 4:
                           case 'end':
-                            return _context9.stop();
+                            return _context8.stop();
                         }
                       }
-                    }, _callee9, _this4);
+                    }, _callee8, _this4);
                   }));
 
-                  return function (_x5) {
-                    return _ref12.apply(this, arguments);
+                  return function (_x4) {
+                    return _ref11.apply(this, arguments);
                   };
                 }()));
 
               case 4:
               case 'end':
-                return _context10.stop();
+                return _context9.stop();
             }
           }
-        }, _callee10, this);
+        }, _callee9, this);
       }));
 
       function generateRouter() {
-        return _ref10.apply(this, arguments);
+        return _ref9.apply(this, arguments);
       }
 
       return generateRouter;
@@ -6499,29 +6480,29 @@ var Builder = function () {
   }, {
     key: 'buildRouter',
     value: function () {
-      var _ref13 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee12() {
+      var _ref12 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee11() {
         var _this5 = this;
 
-        return regenerator.wrap(function _callee12$(_context12) {
+        return regenerator.wrap(function _callee11$(_context11) {
           while (1) {
-            switch (_context12.prev = _context12.next) {
+            switch (_context11.prev = _context11.next) {
               case 0:
                 debug('Building Router files...');
-                _context12.next = 3;
+                _context11.next = 3;
                 return _Promise.all(this.routers.map(function () {
-                  var _ref15 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee11(_ref14) {
-                    var entryName = _ref14.entryName,
-                        router = _ref14.router;
+                  var _ref14 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee10(_ref13) {
+                    var entryName = _ref13.entryName,
+                        router = _ref13.router;
                     var tpl, compiler;
-                    return regenerator.wrap(function _callee11$(_context11) {
+                    return regenerator.wrap(function _callee10$(_context10) {
                       while (1) {
-                        switch (_context11.prev = _context11.next) {
+                        switch (_context10.prev = _context10.next) {
                           case 0:
-                            _context11.next = 2;
+                            _context10.next = 2;
                             return fs.readFile(path.join(_this5.templateRoot, 'router.js'), 'utf-8');
 
                           case 2:
-                            tpl = _context11.sent;
+                            tpl = _context10.sent;
 
 
                             // 2. 生成文件
@@ -6541,34 +6522,34 @@ var Builder = function () {
                                 }
                               }
                             });
-                            _context11.next = 6;
+                            _context10.next = 6;
                             return fs.writeFile(path.join(_this5.generateAppRoot, 'entries', entryName, 'router.js'), compiler(_Object$assign({ entryName: entryName, router: { routes: router } }, {
                               uniqBy: uniqBy_1
                             })), 'utf-8');
 
                           case 6:
                           case 'end':
-                            return _context11.stop();
+                            return _context10.stop();
                         }
                       }
-                    }, _callee11, _this5);
+                    }, _callee10, _this5);
                   }));
 
-                  return function (_x6) {
-                    return _ref15.apply(this, arguments);
+                  return function (_x5) {
+                    return _ref14.apply(this, arguments);
                   };
                 }()));
 
               case 3:
               case 'end':
-                return _context12.stop();
+                return _context11.stop();
             }
           }
-        }, _callee12, this);
+        }, _callee11, this);
       }));
 
       function buildRouter() {
-        return _ref13.apply(this, arguments);
+        return _ref12.apply(this, arguments);
       }
 
       return buildRouter;
@@ -6583,19 +6564,19 @@ var Builder = function () {
   }, {
     key: 'generateLayout',
     value: function () {
-      var _ref16 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee13() {
+      var _ref15 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee12() {
         var _this6 = this;
 
         var hasErrorLayout, relativeToBuild, layoutsFiles;
-        return regenerator.wrap(function _callee13$(_context13) {
+        return regenerator.wrap(function _callee12$(_context12) {
           while (1) {
-            switch (_context13.prev = _context13.next) {
+            switch (_context12.prev = _context12.next) {
               case 0:
                 debug('Generating Layouts...');
                 this.layouts = {};
 
                 if (!fs.existsSync(path.resolve(this.her.defaultOptions.srcDir, 'layouts'))) {
-                  _context13.next = 9;
+                  _context12.next = 9;
                   break;
                 }
 
@@ -6609,11 +6590,11 @@ var Builder = function () {
                   return relativeTo.apply(undefined, [_this6.generateAppRoot].concat(args));
                 };
 
-                _context13.next = 7;
+                _context12.next = 7;
                 return glob('layouts/**/*.vue', { cwd: this.her.defaultOptions.srcDir });
 
               case 7:
-                layoutsFiles = _context13.sent;
+                layoutsFiles = _context12.sent;
 
                 layoutsFiles.forEach(function (file) {
                   var name = file.split('/').slice(1).join('/').replace(/\.vue$/, '');
@@ -6625,14 +6606,14 @@ var Builder = function () {
 
               case 9:
               case 'end':
-                return _context13.stop();
+                return _context12.stop();
             }
           }
-        }, _callee13, this);
+        }, _callee12, this);
       }));
 
       function generateLayout() {
-        return _ref16.apply(this, arguments);
+        return _ref15.apply(this, arguments);
       }
 
       return generateLayout;
@@ -6640,20 +6621,20 @@ var Builder = function () {
   }, {
     key: 'buildLayout',
     value: function () {
-      var _ref17 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee14() {
+      var _ref16 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee13() {
         var tpl, compiler;
-        return regenerator.wrap(function _callee14$(_context14) {
+        return regenerator.wrap(function _callee13$(_context13) {
           while (1) {
-            switch (_context14.prev = _context14.next) {
+            switch (_context13.prev = _context13.next) {
               case 0:
                 debug('Building Layouts...');
                 // 生成路由文件
                 // 1. 读取模板
-                _context14.next = 3;
+                _context13.next = 3;
                 return fs.readFile(path.join(this.templateRoot, 'App.vue'), 'utf-8');
 
               case 3:
-                tpl = _context14.sent;
+                tpl = _context13.sent;
 
 
                 // 2. 生成文件
@@ -6666,19 +6647,19 @@ var Builder = function () {
                     wChunk: wChunk
                   }
                 });
-                _context14.next = 7;
+                _context13.next = 7;
                 return fs.writeFile(path.join(this.generateAppRoot, 'App.vue'), compiler({ layouts: this.layouts }), 'utf-8');
 
               case 7:
               case 'end':
-                return _context14.stop();
+                return _context13.stop();
             }
           }
-        }, _callee14, this);
+        }, _callee13, this);
       }));
 
       function buildLayout() {
-        return _ref17.apply(this, arguments);
+        return _ref16.apply(this, arguments);
       }
 
       return buildLayout;
@@ -6740,7 +6721,6 @@ function styleLoader(baseOption, ext) {
         sourceMap: process.env.NODE_ENV !== 'production'
       }
     });
-    console.log(res);
     return res;
   });
 
@@ -6927,7 +6907,13 @@ var configFactory = function (baseOption, builderOption) {
     }), new webpack.optimize.CommonsChunkPlugin({
       name: 'manifest',
       chunks: ['vendor']
-    })]))
+    })].concat(_toConsumableArray(process.env.NODE_ENV == 'production' ? [new CompressionWebpackPlugin({
+      asset: '[path].gz[query]',
+      algorithm: 'gzip',
+      test: new RegExp('\\.(js|css)$'),
+      threshold: 10240,
+      minRatio: 0.8
+    })] : []))))
   };
 };
 
@@ -6959,64 +6945,103 @@ var Server = function () {
   _createClass(Server, [{
     key: 'buildWebpack',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee() {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3() {
         var _this = this;
 
-        var sharedFS, sharedCache;
-        return regenerator.wrap(function _callee$(_context) {
+        return regenerator.wrap(function _callee3$(_context3) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context3.prev = _context3.next) {
               case 0:
+                debug$1('Adding Webpack Middleware...');
                 // Initialize shared FS and Cache
-                sharedFS = this.her.defaultOptions.dev && new MFS();
-                sharedCache = {};
-
                 this.webpackConfig = configFactory(this.her.defaultOptions, this.her.builder);
                 // Initialize compilers
 
                 this.compilers = [this.webpackConfig].map(function (compilersOption) {
-                  var compiler = webpack(compilersOption);
-                  // In dev, write files in memory FS (except for DLL)
-                  if (sharedFS) {
-                    compiler.outputFileSystem = sharedFS;
-                  }
-                  compiler.cache = sharedCache;
-                  return compiler;
+                  return webpack(compilersOption);
                 });
 
-                _context.next = 6;
+                _context3.next = 5;
                 return _Promise.all(this.compilers.map(function (compiler) {
-                  var name = compiler.options.name;
-                  // --- Dev Build ---
-                  if (_this.her.defaultOptions.dev) {
-                    return _this.webpackDev(compiler);
-                  }
-                  // --- Production Build ---
-                  return new _Promise(function (resolve$$1, reject) {
-                    compiler.run(function (err, stats) {
-                      /* istanbul ignore if */
-                      if (err) {
-                        throw err;
-                      }
+                  return new _Promise(function () {
+                    var _ref2 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2(resolve$$1, reject) {
+                      var timer;
+                      return regenerator.wrap(function _callee2$(_context2) {
+                        while (1) {
+                          switch (_context2.prev = _context2.next) {
+                            case 0:
+                              // --- Dev Build ---
+                              timer = void 0;
 
-                      // Show build stats for production
-                      console.log(stats.toString(_this.webpackStats)); // eslint-disable-line no-console
+                              compiler.plugin('done', function () {
+                                var _ref3 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee(stats) {
+                                  return regenerator.wrap(function _callee$(_context) {
+                                    while (1) {
+                                      switch (_context.prev = _context.next) {
+                                        case 0:
+                                          clearTimeout(timer);
+                                          timer = setTimeout(function () {
+                                            return process.nextTick(resolve$$1);
+                                          }, 5000);
 
-                      /* istanbul ignore if */
-                      if (stats.hasErrors()) {
-                        throw new Error('Webpack build exited with errors');
-                      }
-                      resolve$$1();
-                    });
-                  });
+                                        case 2:
+                                        case 'end':
+                                          return _context.stop();
+                                      }
+                                    }
+                                  }, _callee, _this);
+                                }));
+
+                                return function (_x3) {
+                                  return _ref3.apply(this, arguments);
+                                };
+                              }());
+
+                              if (!_this.her.defaultOptions.dev) {
+                                _context2.next = 4;
+                                break;
+                              }
+
+                              return _context2.abrupt('return', _this.webpackDev(compiler));
+
+                            case 4:
+                              // --- Production Build ---
+                              compiler.run(function (err, stats) {
+                                /* istanbul ignore if */
+                                if (err) {
+                                  return reject(err);
+                                }
+
+                                // Show build stats for production
+                                console.log(stats.toString(_this.webpackStats)); // eslint-disable-line no-console
+
+                                /* istanbul ignore if */
+                                if (stats.hasErrors()) {
+                                  return reject(new Error('Webpack build exited with errors'));
+                                }
+                                resolve$$1();
+                              });
+
+                            case 5:
+                            case 'end':
+                              return _context2.stop();
+                          }
+                        }
+                      }, _callee2, _this);
+                    }));
+
+                    return function (_x, _x2) {
+                      return _ref2.apply(this, arguments);
+                    };
+                  }());
                 }));
 
-              case 6:
+              case 5:
               case 'end':
-                return _context.stop();
+                return _context3.stop();
             }
           }
-        }, _callee, this);
+        }, _callee3, this);
       }));
 
       function buildWebpack() {
@@ -7031,12 +7056,11 @@ var Server = function () {
       var _this2 = this;
 
       return new _Promise(function (resolve$$1, reject) {
-        debug$1('Adding Webpack Middleware...');
         _this2.webpackDevMiddleware = pify(webpackDevMiddleware(compiler, {
           publicPath: _this2.webpackConfig.output.publicPath,
-          // // stats: this.webpackStats,
-          // noInfo: false,
-          // quiet: false,
+          stats: _this2.webpackStats,
+          noInfo: false,
+          quiet: false,
           watchOptions: []
         }));
         _this2.webpackDevMiddleware.close = pify(_this2.webpackDevMiddleware.close);
@@ -7054,11 +7078,10 @@ var Server = function () {
     value: function watchFiles() {
       var _this3 = this;
 
-      debug$1('Adding Watcher');
       var src = this.her.defaultOptions.srcDir;
       var patterns = [r(src, 'layouts'), r(src, 'entries'), r(src, 'components'), r(src, 'layouts/*.vue'), r(src, 'layouts/**/*.vue')];
-      this.her.builder.entries.forEach(function (_ref2) {
-        var entryName = _ref2.entryName;
+      this.her.builder.entries.forEach(function (_ref4) {
+        var entryName = _ref4.entryName;
 
         patterns.push(r(src, entryName), r(src, entryName + '/pages'), r(src, entryName + '/pages/*.vue'), r(src, entryName + '/pages/**/*.vue'));
       });
@@ -7066,20 +7089,20 @@ var Server = function () {
       var options = {
         ignoreInitial: true
         /* istanbul ignore next */
-      };var refreshFiles = _.debounce(_asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee2() {
-        return regenerator.wrap(function _callee2$(_context2) {
+      };var refreshFiles = _.debounce(_asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee4() {
+        return regenerator.wrap(function _callee4$(_context4) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context4.prev = _context4.next) {
               case 0:
-                _context2.next = 2;
+                _context4.next = 2;
                 return _this3.her.builder.build();
 
               case 2:
               case 'end':
-                return _context2.stop();
+                return _context4.stop();
             }
           }
-        }, _callee2, _this3);
+        }, _callee4, _this3);
       })), 200);
 
       // Watch for src Files
@@ -7088,10 +7111,10 @@ var Server = function () {
   }, {
     key: 'unwatch',
     value: function () {
-      var _ref4 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3() {
-        return regenerator.wrap(function _callee3$(_context3) {
+      var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5() {
+        return regenerator.wrap(function _callee5$(_context5) {
           while (1) {
-            switch (_context3.prev = _context3.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
                 if (this.filesWatcher) {
                   this.filesWatcher.close();
@@ -7106,19 +7129,19 @@ var Server = function () {
                 });
 
                 // Stop webpack middleware
-                _context3.next = 5;
+                _context5.next = 5;
                 return this.webpackDevMiddleware.close();
 
               case 5:
               case 'end':
-                return _context3.stop();
+                return _context5.stop();
             }
           }
-        }, _callee3, this);
+        }, _callee5, this);
       }));
 
       function unwatch() {
-        return _ref4.apply(this, arguments);
+        return _ref6.apply(this, arguments);
       }
 
       return unwatch;
@@ -7152,29 +7175,29 @@ var Server = function () {
   }, {
     key: 'ready',
     value: function () {
-      var _ref5 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee4() {
-        return regenerator.wrap(function _callee4$(_context4) {
+      var _ref7 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee6() {
+        return regenerator.wrap(function _callee6$(_context6) {
           while (1) {
-            switch (_context4.prev = _context4.next) {
+            switch (_context6.prev = _context6.next) {
               case 0:
                 this.app = express();
-                _context4.next = 3;
+                _context6.next = 3;
                 return this.buildWebpack();
 
               case 3:
-                _context4.next = 5;
+                _context6.next = 5;
                 return this.setupMiddlewares();
 
               case 5:
               case 'end':
-                return _context4.stop();
+                return _context6.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee6, this);
       }));
 
       function ready() {
-        return _ref5.apply(this, arguments);
+        return _ref7.apply(this, arguments);
       }
 
       return ready;
@@ -7209,18 +7232,18 @@ var Server = function () {
       var _this6 = this;
 
       return new _Promise(function () {
-        var _ref6 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee5(resolve$$1, reject) {
-          return regenerator.wrap(function _callee5$(_context5) {
+        var _ref8 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee7(resolve$$1, reject) {
+          return regenerator.wrap(function _callee7$(_context7) {
             while (1) {
-              switch (_context5.prev = _context5.next) {
+              switch (_context7.prev = _context7.next) {
                 case 0:
                   if (!_this6.server) {
-                    _context5.next = 7;
+                    _context7.next = 7;
                     break;
                   }
 
                   debug$1('Server Stoping...');
-                  _context5.next = 4;
+                  _context7.next = 4;
                   return _this6.unwatch();
 
                 case 4:
@@ -7231,7 +7254,7 @@ var Server = function () {
                     }
                     resolve$$1();
                   });
-                  _context5.next = 8;
+                  _context7.next = 8;
                   break;
 
                 case 7:
@@ -7239,14 +7262,14 @@ var Server = function () {
 
                 case 8:
                 case 'end':
-                  return _context5.stop();
+                  return _context7.stop();
               }
             }
-          }, _callee5, _this6);
+          }, _callee7, _this6);
         }));
 
-        return function (_x, _x2) {
-          return _ref6.apply(this, arguments);
+        return function (_x4, _x5) {
+          return _ref8.apply(this, arguments);
         };
       }());
     }

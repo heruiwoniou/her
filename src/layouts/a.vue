@@ -30,7 +30,8 @@ export default {
 </script>
 <style>
 .layout-a ul {
-  background: red;
+  background: yellow;
+  color: darkcyan;
 }
 </style>
 

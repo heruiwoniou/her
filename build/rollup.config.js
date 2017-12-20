@@ -10,83 +10,44 @@ import packageJson from '../package.json'
 const dependencies = Object.keys(packageJson.dependencies)
 const version = packageJson.version
 
-export default [{
-  input: resolve('lib/index.js'),
-  output: {
-    file: 'd:/Program/Git/moral-education-vue/node_modules/her/release/index.js',
-    format: 'cjs',
-    sourcemap: true
-  },
-  external: ['fs', 'path', 'http', 'connect']
-    .concat(dependencies),
-  name: 'Her',
-  plugins: [
-    rollupAlias({
-      resolve: ['.js', '.json']
-    }),
+export default [
+  {
+    input: resolve('lib/index.js'),
+    output: {
+      file: resolve('release/index.js'),
+      format: 'cjs',
+      sourcemap: true
+    },
+    external: ['fs', 'path', 'http', 'connect', 'url', 'crypto', 'buffer', 'stream', 'constants', 'util', 'assert', 'zlib']
+      .concat(dependencies),
+    name: 'Her',
+    plugins: [
+      rollupAlias({
+        resolve: ['.js', '.json']
+      }),
 
-    rollupNodeResolve({ preferBuiltins: true }),
+      rollupNodeResolve({ preferBuiltins: true }),
 
-    rollupCommonJS(),
+      rollupCommonJS(),
 
-    rollupJson(),
+      rollupJson(),
 
-    rollupBabel({
-      exclude: 'node_modules/**',
-      runtimeHelpers: true,
-      presets: [
-        [
-          "env",
-          {
-            "modules": false
-          }
+      rollupBabel({
+        exclude: 'node_modules/**',
+        runtimeHelpers: true,
+        presets: [
+          [
+            "env",
+            {
+              "modules": false
+            }
+          ]
+        ],
+        "plugins": [
+          "transform-runtime",
+          "external-helpers"
         ]
-      ],
-      "plugins": [
-        "transform-runtime",
-        "external-helpers"
-      ]
-    }),
-    rollupReplace({ __VERSION__: version })
-  ]
-},
-{
-  input: resolve('lib/index.js'),
-  output: {
-    file: resolve('release/index.js'),
-    format: 'cjs',
-    sourcemap: true
-  },
-  external: ['fs', 'path', 'http', 'connect']
-    .concat(dependencies),
-  name: 'Her',
-  plugins: [
-    rollupAlias({
-      resolve: ['.js', '.json']
-    }),
-
-    rollupNodeResolve({ preferBuiltins: true }),
-
-    rollupCommonJS(),
-
-    rollupJson(),
-
-    rollupBabel({
-      exclude: 'node_modules/**',
-      runtimeHelpers: true,
-      presets: [
-        [
-          "env",
-          {
-            "modules": false
-          }
-        ]
-      ],
-      "plugins": [
-        "transform-runtime",
-        "external-helpers"
-      ]
-    }),
-    rollupReplace({ __VERSION__: version })
-  ]
-}]
+      }),
+      rollupReplace({ __VERSION__: version })
+    ]
+  }]

@@ -33,5 +33,9 @@ export default {
 <style lang="stylus">
 .layout-default ul {
   background: baseColor;
+
+  a {
+    color: blue;
+  }
 }
 </style>

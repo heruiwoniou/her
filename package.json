@@ -18,6 +18,7 @@
     "chalk": "^2.3.0",
     "chokidar": "^1.7.0",
     "clean-webpack-plugin": "^0.1.17",
+    "compression-webpack-plugin": "^1.1.2",
     "connect": "^3.6.5",
     "connect-history-api-fallback": "^1.5.0",
     "cross-env": "^5.1.1",
@@ -59,6 +60,7 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
+    "memory-fs": "^0.4.1",
     "rollup": "^0.52.1",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^3.0.2",
@@ -72,7 +74,7 @@
     "dev": "rollup --config ./build/rollup.config.js -w",
     "play": "node ./bin/her-dev",
     "build": "node ./bin/her-build",
-    "production":"cross-env NODE_ENV=production npm run build"
+    "production": "cross-env NODE_ENV=production npm run build"
   },
   "files": [
     "bin",
