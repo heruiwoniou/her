@@ -29,6 +29,7 @@ export default {
   }),
   mounted(){
     this.$loading = this.$refs.loading
+    window.__her__ = this;
   },
   watch: {
     'err': 'errorChanged'

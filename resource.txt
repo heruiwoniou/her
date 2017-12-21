@@ -1,0 +1,56 @@
+Hash: 1799c442e51f9e45b9bb
+Version: webpack 3.10.0
+Time: 286ms
+                                                    Asset       Size  Chunks                    Chunk Names
+         __comsys__/js/main_about.e695a7b463daae3c4c7b.js    7.81 kB       8                    main_about
+                     55bf1d7958f72232ada2.hot-update.json   44 bytes          [emitted]         
+    __comsys__/js/layouts_default.5182898274d0dac25202.js    65.3 kB       0                    layouts_default
+          __comsys__/js/layouts_c.c51c73ce0b7aca65fe14.js    64.4 kB       1                    layouts_c
+          __comsys__/js/layouts_a.975cfc8c19a55a30199e.js    64.5 kB       2                    layouts_a
+        __comsys__/js/login_index.9cd3322b8bd0be1759c9.js    9.88 kB       3                    login_index
+    __comsys__/js/login_classes_a.8f6dc7c10f42c04a3534.js    9.49 kB       4                    login_classes_a
+      __comsys__/js/login_classes.7642ebb37cd9d1e7654b.js    11.3 kB       5                    login_classes
+        __comsys__/js/login_about.5774d2ab91cb1be97ded.js    9.45 kB       6                    login_about
+         __comsys__/js/main_index.3971ddc6a87276545ab0.js    7.81 kB       7                    main_index
+                     dd20f9e38facc698f04f.hot-update.json   44 bytes          [emitted]         
+         __comsys__/js/login_news.4ba4066d822beddc830d.js    7.81 kB       9                    login_news
+__comsys__/js/login_classes_index.57ca09ef86d053ebe543.js     7.9 kB      10                    login_classes_index
+    __comsys__/js/login_classes_c.38b430310d0f261df3e0.js    7.85 kB      11                    login_classes_c
+    __comsys__/js/login_classes_b.9f5e6e79332c853528c4.js    7.85 kB      12                    login_classes_b
+               __comsys__/js/main.1799c442e51f9e45b9bb.js    1.68 MB      13  [emitted]  [big]  main
+              __comsys__/js/login.1799c442e51f9e45b9bb.js    1.69 MB      14  [emitted]  [big]  login
+                     020b066cb425ced7fcdd.hot-update.json   35 bytes          [emitted]         
+                                               index.html  395 bytes          [emitted]         
+                                                main.html  390 bytes          [emitted]         
+  [11] ./.her/App.vue 2.44 kB {13} {14}
+  [13] ./lib/config/client.js 242 bytes {13} {14}
+  [14] ./node_modules/eventsource-polyfill/dist/browserify-eventsource.js 852 bytes {13} {14}
+  [16] (webpack)-hot-middleware/client.js?noInfo=true&reload=true 7.35 kB {13} {14}
+  [31] ./.her/entryFactory.js 8.89 kB {13} {14}
+  [32] ./node_modules/babel-runtime/regenerator/index.js 49 bytes {13} {14}
+  [46] ./.her/utils.js 579 bytes {13} {14}
+  [57] multi ./lib/config/client ./.her/entries/login/index.js 40 bytes {14}
+  [58] ./.her/entries/login/index.js 228 bytes {14} [built]
+  [59] ./src/entries/login/store/index.js 47 bytes {14}
+  [60] ./.her/entries/login/router.js 2.19 kB {14}
+  [61] multi ./lib/config/client ./.her/entries/main/index.js 40 bytes {13}
+  [62] ./.her/entries/main/index.js 227 bytes {13} [built]
+  [63] ./src/entries/main/store/index.js 18 bytes {13}
+  [64] ./.her/entries/main/router.js 560 bytes {13}
+    + 94 hidden modules
+Child html-webpack-plugin for "index.html":
+                                   Asset      Size  Chunks             Chunk Names
+                              index.html   1.45 MB       0             
+    55bf1d7958f72232ada2.hot-update.json  44 bytes          [emitted]  
+       [0] ./node_modules/html-webpack-plugin/lib/loader.js!./src/entries/login/index.html 699 bytes {0}
+       [1] ./node_modules/lodash/lodash.js 540 kB {0}
+       [2] (webpack)/buildin/global.js 509 bytes {0}
+       [3] (webpack)/buildin/module.js 517 bytes {0}
+Child html-webpack-plugin for "main.html":
+                                   Asset      Size  Chunks             Chunk Names
+                               main.html   1.45 MB       0             
+    dd20f9e38facc698f04f.hot-update.json  44 bytes          [emitted]  
+       [0] ./node_modules/html-webpack-plugin/lib/loader.js!./src/entries/main/index.html 695 bytes {0}
+       [1] ./node_modules/lodash/lodash.js 540 kB {0}
+       [2] (webpack)/buildin/global.js 509 bytes {0}
+       [3] (webpack)/buildin/module.js 517 bytes {0}

@@ -1,6 +1,6 @@
 {
   "name": "vue-her",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "vue-frame like-nuxt auto-router webpack Multiple-entry spa",
   "main": "./index.js",
   "bin": {
@@ -44,7 +44,10 @@
     "postcss-loader": "^2.0.9",
     "rimraf": "^2.6.2",
     "serialize-javascript": "^1.4.0",
+    "server-destroy": "^1.0.1",
     "style-loader": "^0.19.0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.1",
     "url-loader": "^0.6.2",
     "vue": "^2.5.10",
     "vue-loader": "^13.5.0",

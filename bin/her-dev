@@ -59,8 +59,8 @@ let startDev = function (oldInstance) {
   }
 
   return Promise.resolve()
-    .then(() => oldInstance && oldInstance ? (oldInstance.stop() || oldInstance.server.unwatch()) : Promise.resolve())
-    .then(() => instance.builder.build(true))
+    .then(() => oldInstance ? oldInstance.stop() : Promise.resolve())
+    .then(() => instance.builder.build(!oldInstance))
     .then(() => instance.server.ready())
     .then(() => instance.start(!!!oldInstance))
     .then(() => instance)
