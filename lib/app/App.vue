@@ -27,9 +27,11 @@ export default {
     err: null,
     dateErr: null
   }),
+  created(){
+    window.__$vm__ = this;
+  },
   mounted(){
     this.$loading = this.$refs.loading
-    window.__her__ = this;
   },
   watch: {
     'err': 'errorChanged'
