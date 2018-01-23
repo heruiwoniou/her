@@ -8248,9 +8248,11 @@ var Server = function () {
   }, {
     key: "setupProxys",
     value: function setupProxys() {
+      var _this5 = this;
+
       debug$1("Setuping Proxys...");
-      _Object$keys(this.her.defaultOptions.server).forEach(function (key) {
-        var target = config.proxys[key];
+      _Object$keys(this.her.defaultOptions.server.proxys).forEach(function (key) {
+        var target = _this5.her.defaultOptions.server.proxys[key];
         var proxyConfig = Object.prototype.toString.call(target) === '[object String]' ? { target: target, changeOrigin: true } : target;
         app.use(key + '/*', proxy(key, proxyConfig));
       });
@@ -8298,14 +8300,14 @@ var Server = function () {
   }, {
     key: "listen",
     value: function listen(isFirst) {
-      var _this5 = this;
+      var _this6 = this;
 
       return new _Promise(function (resolve$$1, reject) {
-        var _her$defaultOptions$s = _this5.her.defaultOptions.server,
+        var _her$defaultOptions$s = _this6.her.defaultOptions.server,
             host = _her$defaultOptions$s.host,
             port = _her$defaultOptions$s.port;
 
-        _this5.server = _this5.app.listen({ host: host, port: port, exclusive: false }, function (err) {
+        _this6.server = _this6.app.listen({ host: host, port: port, exclusive: false }, function (err) {
           if (err) {
             reject(err);
           }
@@ -8317,13 +8319,13 @@ var Server = function () {
           }
           resolve$$1();
         });
-        enableDestroy(_this5.server);
+        enableDestroy(_this6.server);
       });
     }
   }, {
     key: "stop",
     value: function stop() {
-      var _this6 = this;
+      var _this7 = this;
 
       return new _Promise(function () {
         var _ref9 = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee8(resolve$$1, reject) {
@@ -8331,17 +8333,17 @@ var Server = function () {
             while (1) {
               switch (_context8.prev = _context8.next) {
                 case 0:
-                  if (!_this6.server) {
+                  if (!_this7.server) {
                     _context8.next = 7;
                     break;
                   }
 
                   debug$1("Server Stoping...");
                   _context8.next = 4;
-                  return _this6.unwatch();
+                  return _this7.unwatch();
 
                 case 4:
-                  _this6.server.destroy(function (err) {
+                  _this7.server.destroy(function (err) {
                     debug$1("Server Closed");
                     if (err) {
                       return reject(err);
@@ -8359,7 +8361,7 @@ var Server = function () {
                   return _context8.stop();
               }
             }
-          }, _callee8, _this6);
+          }, _callee8, _this7);
         }));
 
         return function (_x4, _x5) {
