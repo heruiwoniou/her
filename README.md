@@ -61,8 +61,6 @@ module.exports = {
 ### Update Log
 
 v0.0.12 update
-- 2018/1/22
-  her.config.server.middlewares can add router. like this her.config.server.middlewares.push(['upload/:filename', function(req, res){ ...do something }])
 - 2018/1/23
   将babel插件vue-app的useBuiltIns参数设置为false,自动加载pollyfill
 - 2018/1/24
