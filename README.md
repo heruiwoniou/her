@@ -60,8 +60,12 @@ module.exports = {
 ```
 ### Update Log
 
-v0.0.12 update
+v0.0.13 update
 - 2018/1/23
   将babel插件vue-app的useBuiltIns参数设置为false,自动加载pollyfill
 - 2018/1/24
   添加了proxy代理配置
+v0.0.14 update
+- 2018/2/11
+  移除了 LodashModuleReplacementPlugin 插件以解决外部使用引起的问题
+  

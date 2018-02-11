@@ -1,6 +1,6 @@
 {
   "name": "vue-her",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "vue-frame like-nuxt auto-router webpack Multiple-entry spa",
   "main": "./index.js",
   "bin": {
@@ -83,18 +83,8 @@
     "build": "node ./bin/her-build",
     "production": "cross-env NODE_ENV=production npm run build"
   },
-  "files": [
-    "bin",
-    "lib",
-    "release",
-    "index.js",
-    ".postcssrc.js"
-  ],
+  "files": ["bin", "lib", "release", "index.js", ".postcssrc.js"],
   "author": "",
   "license": "ISC",
-  "browserslist": [
-    "> 1%",
-    "last 10 versions",
-    "not ie <= 8"
-  ]
+  "browserslist": ["> 1%", "last 10 versions", "not ie <= 8"]
 }
