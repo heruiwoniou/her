@@ -3,6 +3,6 @@
 </template>
 <script>
 export default {
-  layout: "c"
+  layout: "cc"
 };
 </script>
