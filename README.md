@@ -71,9 +71,9 @@ v0.0.15 update
 v0.0.16 update
 - 2018/2/28
   将APP实例，router以及store置入全局变量
-  ```js
+```js
    global.__vm__
    global.__router__
    global.__store__
-  ```
+```
   
