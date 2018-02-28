@@ -72,8 +72,11 @@ v0.0.16 update
 - 2018/2/28
   将APP实例，router以及store置入全局变量
 ```js
+   // 全局根实例对象
    global.__vm__
+   // 全局路由对象
    global.__router__
+   // 全局状态对象
    global.__store__
 ```
   
