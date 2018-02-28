@@ -65,7 +65,13 @@ v0.0.13 update
   将babel插件vue-app的useBuiltIns参数设置为false,自动加载pollyfill
 - 2018/1/24
   添加了proxy代理配置
-v0.0.14 update
+v0.0.15 update
 - 2018/2/11
   移除了 LodashModuleReplacementPlugin 插件以解决外部使用引起的问题
+v0.0.16 update
+- 2018/2/28
+  将APP实例，router以及store置入全局变量
+  - global.__vm__
+  - global.__router__
+  - global.__store__
   
