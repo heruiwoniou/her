@@ -79,4 +79,6 @@ v0.0.16 update
    // 全局状态对象
    global.__store__
 ```
+  router实例可通过import router from '@@@/entries/<%=入口模块 %>/router'引用
+  修改store返回vuex实例
   
